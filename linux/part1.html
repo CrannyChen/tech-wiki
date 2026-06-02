@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Linux 基礎指令詳解</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
 
 :root {
-  --bg: #0a0e13;
+  --bg: #080c14;
   --surface: #111720;
   --surface2: #1a2233;
   --surface3: #202c40;
@@ -41,93 +41,77 @@ body {
   line-height: 1.75;
 }
 
-/* === LAYOUT === */
-.layout { display: flex; min-height: 100vh; }
-
-/* === SIDEBAR === */
-.sidebar {
-  width: 280px;
-  background: var(--surface);
-  border-right: 1px solid var(--border);
-  position: fixed;
-  top: 0; left: 0; bottom: 0;
-  overflow-y: auto;
-  z-index: 200;
-  scrollbar-width: thin;
-  scrollbar-color: var(--border2) transparent;
-}
-
-.sidebar-logo {
-  padding: 22px 20px 18px;
-  border-bottom: 1px solid var(--border);
-}
-
-.sidebar-logo .title {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 2px;
-  color: var(--green);
-  text-transform: uppercase;
-}
-
-.sidebar-logo .subtitle {
-  font-size: 12px;
-  color: var(--text-dim);
-  margin-top: 4px;
-}
-
-.nav-group { margin: 6px 0; }
-
-.nav-group-label {
-  padding: 10px 20px 4px;
-  font-size: 10px;
-  letter-spacing: 2px;
-  text-transform: uppercase;
-  color: var(--text-muted);
-  font-weight: 700;
-}
-
-.nav-link {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 9px 20px;
-  cursor: pointer;
-  color: var(--text-dim);
-  font-size: 13px;
-  transition: all 0.15s;
-  border-left: 3px solid transparent;
-}
-
-.nav-link:hover {
-  background: var(--surface2);
-  color: var(--text);
-}
-
-.nav-link.active {
-  background: linear-gradient(90deg, rgba(74,222,128,0.08), transparent);
-  border-left-color: var(--green);
-  color: var(--green);
-  font-weight: 500;
-}
-
-.nav-link .nav-icon { font-size: 15px; width: 20px; text-align: center; }
-.nav-link .nav-badge {
-  margin-left: auto;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  background: var(--surface3);
-  color: var(--text-dim);
-  padding: 1px 6px;
-  border-radius: 10px;
-}
-
 /* === MAIN === */
 .main {
-  margin-left: 280px;
+  margin-left: 0;
   flex: 1;
   min-height: 100vh;
 }
+
+/* === TOPIC NAV === */
+.topic-nav {
+  position: sticky;
+  top: 0;
+  z-index: 50;
+  background: #080c14;
+  border-bottom: 1px solid #1a2540;
+  padding: 0 32px;
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.topic-nav::-webkit-scrollbar { display: none; }
+
+.topic-group {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 10px 0;
+  flex-shrink: 0;
+}
+
+.topic-group + .topic-group::before {
+  content: '';
+  display: block;
+  width: 1px;
+  height: 20px;
+  background: #1a2540;
+  margin: 0 12px;
+  flex-shrink: 0;
+}
+
+.topic-group-label {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: #4e6a88;
+  margin-right: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.topic-btn {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  padding: 5px 10px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: #4e6a88;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
+  transition: background .15s, color .15s;
+}
+.topic-btn:hover { background: rgba(56,189,248,.07); color: #cdd9f0; }
+.topic-btn.active { background: rgba(56,189,248,.1); color: #38bdf8; }
 
 /* === SECTIONS === */
 .section {
@@ -173,7 +157,7 @@ body {
 .section-hero .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
 
 .tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   padding: 3px 10px;
   border-radius: 20px;
@@ -220,7 +204,7 @@ body {
 }
 
 .card-header .header-tag {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 10px;
   padding: 2px 8px;
   border-radius: 4px;
@@ -252,7 +236,7 @@ body {
 .dot-g { background: #22c55e; }
 
 .terminal-titlebar .tbar-name {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   color: var(--text-dim);
   margin-left: 6px;
@@ -260,7 +244,7 @@ body {
 
 .terminal-body {
   padding: 16px 18px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 12.5px;
   line-height: 2;
   white-space: pre;
@@ -350,7 +334,7 @@ body {
   background: var(--green-dim);
   border: 2px solid var(--green);
   color: var(--green);
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11px;
   font-weight: 700;
   display: flex; align-items: center; justify-content: center;
@@ -368,7 +352,7 @@ body {
   border: 1px solid var(--border);
   border-radius: 8px;
   padding: 20px 24px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 11.5px;
   line-height: 1.9;
   margin: 14px 0;
@@ -379,7 +363,7 @@ body {
 
 /* === INLINE CODE === */
 code {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
   background: rgba(96,165,250,0.1);
   color: var(--cyan);
@@ -390,7 +374,7 @@ code {
 
 /* === PERMISSION BOX === */
 .perm-box {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 14px;
   background: #060a0f;
   border: 1px solid var(--border);
@@ -408,7 +392,7 @@ code {
   border-bottom: 3px solid var(--border2);
   border-radius: 6px;
   padding: 5px 10px;
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'IBM Plex Mono', monospace;
   font-size: 12px;
   color: var(--text-bright);
   display: flex;
@@ -431,78 +415,36 @@ h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 
 <body>
 <div class="layout">
 
-<!-- ====== SIDEBAR ====== -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="title">📘 Part 1</div>
-    <div class="subtitle">Linux 基礎指令詳解</div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">壓縮 / 解壓縮</div>
-    <div class="nav-link active" onclick="show('cat')">
-      <span class="nav-icon">📄</span> cat / zcat
-      <span class="nav-badge">讀檔</span>
-    </div>
-    <div class="nav-link" onclick="show('zip')">
-      <span class="nav-icon">📦</span> zip / unzip
-      <span class="nav-badge">.zip</span>
-    </div>
-    <div class="nav-link" onclick="show('tar')">
-      <span class="nav-icon">🗜️</span> tar
-      <span class="nav-badge">.tar.gz</span>
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">搜尋</div>
-    <div class="nav-link" onclick="show('grep')">
-      <span class="nav-icon">🔍</span> grep / zgrep
-      <span class="nav-badge">文字過濾</span>
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">目錄操作</div>
-    <div class="nav-link" onclick="show('ls')">
-      <span class="nav-icon">📋</span> ls 完整說明
-      <span class="nav-badge">列目錄</span>
-    </div>
-    <div class="nav-link" onclick="show('perm')">
-      <span class="nav-icon">🔑</span> 權限管理 chmod
-      <span class="nav-badge">rwx</span>
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">編輯器</div>
-    <div class="nav-link" onclick="show('vi')">
-      <span class="nav-icon">✏️</span> vi / vim 詳解
-      <span class="nav-badge">全面</span>
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">常用技巧</div>
-    <div class="nav-link" onclick="show('pipe')">
-      <span class="nav-icon">🔗</span> pipe 管線 &amp; 重導向
-    </div>
-    <div class="nav-link" onclick="show('process')">
-      <span class="nav-icon">⚙️</span> 程序管理 ps / kill
-    </div>
-    <div class="nav-link" onclick="show('network')">
-      <span class="nav-icon">🌐</span> 網路指令 netstat
-    </div>
-  </div>
-
-  <div style="padding: 20px; border-top: 1px solid var(--border); margin-top: 12px;">
-    <div style="font-size:11px; color:var(--text-muted);">📗 環境建置篇</div>
-    <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">請開啟 Part 2 檔案</div>
-  </div>
-</aside>
-
 <!-- ====== MAIN ====== -->
 <main class="main">
+
+<nav class="topic-nav">
+  <div class="topic-group">
+    <span class="topic-group-label">壓縮</span>
+    <button class="topic-btn active" onclick="show('cat')">📄 cat</button>
+    <button class="topic-btn" onclick="show('zip')">📦 zip</button>
+    <button class="topic-btn" onclick="show('tar')">🗜️ tar</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">搜尋</span>
+    <button class="topic-btn" onclick="show('grep')">🔍 grep</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">目錄</span>
+    <button class="topic-btn" onclick="show('ls')">📋 ls</button>
+    <button class="topic-btn" onclick="show('perm')">🔑 chmod</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">編輯器</span>
+    <button class="topic-btn" onclick="show('vi')">✏️ vi/vim</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">技巧</span>
+    <button class="topic-btn" onclick="show('pipe')">🔗 pipe</button>
+    <button class="topic-btn" onclick="show('process')">⚙️ ps/kill</button>
+    <button class="topic-btn" onclick="show('network')">🌐 netstat</button>
+  </div>
+</nav>
 
 <!-- ===== CAT / ZCAT ===== -->
 <div class="section active" id="cat">
@@ -955,19 +897,19 @@ h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 
       <div class="card-body">
         <div class="grid-3">
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--green);font-weight:700;">r</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:28px;color:var(--green);font-weight:700;">r</div>
             <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Read 讀取</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">4</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">4</div>
           </div>
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--blue);font-weight:700;">w</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:28px;color:var(--blue);font-weight:700;">w</div>
             <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Write 寫入</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">2</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">2</div>
           </div>
           <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
-            <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--yellow);font-weight:700;">x</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:28px;color:var(--yellow);font-weight:700;">x</div>
             <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Execute 執行</div>
-            <div style="font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">1</div>
+            <div style="font-family:'IBM Plex Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">1</div>
           </div>
         </div>
         <table class="data-table">
@@ -1040,7 +982,7 @@ h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 
       <div class="card-header"><h2>三種模式說明</h2><span class="header-tag tag-green">核心概念</span></div>
       <div class="card-body">
         <style>
-          .vi-diagram { background:#060a0f; border:1px solid var(--border); border-radius:8px; padding:24px 20px; margin:14px 0; font-family:'JetBrains Mono',monospace; font-size:12px; }
+          .vi-diagram { background:#060a0f; border:1px solid var(--border); border-radius:8px; padding:24px 20px; margin:14px 0; font-family:'IBM Plex Mono',monospace; font-size:12px; }
           .vi-title { text-align:center; border:2px solid var(--green); color:var(--green); padding:8px 16px; border-radius:6px; margin-bottom:20px; letter-spacing:1px; }
           .vi-top { display:flex; justify-content:center; margin-bottom:4px; }
           .vi-box { border:2px solid; border-radius:6px; padding:10px 16px; text-align:center; min-width:150px; }
@@ -1256,7 +1198,7 @@ h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 
     <div class="card">
       <div class="card-header"><h2>pipe | 管線</h2><span class="header-tag tag-green">pipe</span></div>
       <div class="card-body">
-        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;">
           <div style="color:var(--text-dim);margin-bottom:14px;">概念：把前一個指令的「輸出」，當成後一個指令的「輸入」</div>
           <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;gap:4px;">
             <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:5px;padding:8px 14px;color:var(--green);text-align:center;">
@@ -1411,11 +1353,12 @@ h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 
 <script>
 function show(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`.topic-btn[onclick="show('${id}')"]`).forEach(b => b.classList.add('active'));
   window.scrollTo(0,0);
 }
 </script>
+<script src="../sidebar.js"></script>
 </body>
 </html>

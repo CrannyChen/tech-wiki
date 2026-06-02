@@ -5,10 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Linux 環境建置完整教學</title>
 <style>
-@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap');
 
 :root {
-  --bg: #0a0e13;
+  --bg: #080c14;
   --surface: #111720;
   --surface2: #1a2233;
   --surface3: #202c40;
@@ -34,18 +34,15 @@
 * { box-sizing: border-box; margin: 0; padding: 0; }
 body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', sans-serif; font-size: 14px; line-height: 1.75; }
 .layout { display: flex; min-height: 100vh; }
-.sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 200; }
-.sidebar-logo { padding: 22px 20px 18px; border-bottom: 1px solid var(--border); }
-.sidebar-logo .title { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--orange); text-transform: uppercase; }
-.sidebar-logo .subtitle { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-.nav-group { margin: 6px 0; }
-.nav-group-label { padding: 10px 20px 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
-.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; color: var(--text-dim); font-size: 13px; transition: all 0.15s; border-left: 3px solid transparent; }
-.nav-link:hover { background: var(--surface2); color: var(--text); }
-.nav-link.active { background: linear-gradient(90deg, rgba(251,146,60,0.1), transparent); border-left-color: var(--orange); color: var(--orange); font-weight: 500; }
-.nav-link .nav-icon { font-size: 15px; width: 20px; text-align: center; }
-.nav-link .nav-badge { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--surface3); color: var(--text-dim); padding: 1px 6px; border-radius: 10px; }
-.main { margin-left: 280px; flex: 1; min-height: 100vh; }
+.main { margin-left: 0; flex: 1; min-height: 100vh; }
+.topic-nav { position: sticky; top: 0; z-index: 50; background: #080c14; border-bottom: 1px solid #1a2540; padding: 0 32px; display: flex; align-items: center; gap: 0; overflow-x: auto; scrollbar-width: none; -ms-overflow-style: none; }
+.topic-nav::-webkit-scrollbar { display: none; }
+.topic-group { display: flex; align-items: center; gap: 2px; padding: 10px 0; flex-shrink: 0; }
+.topic-group + .topic-group::before { content: ''; display: block; width: 1px; height: 20px; background: #1a2540; margin: 0 12px; flex-shrink: 0; }
+.topic-group-label { font-family: 'IBM Plex Mono', monospace; font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: #4e6a88; margin-right: 8px; white-space: nowrap; flex-shrink: 0; }
+.topic-btn { display: flex; align-items: center; gap: 5px; padding: 5px 10px; border-radius: 6px; border: none; background: transparent; color: #4e6a88; font-size: 12px; font-family: inherit; cursor: pointer; white-space: nowrap; flex-shrink: 0; transition: background .15s, color .15s; }
+.topic-btn:hover { background: rgba(56,189,248,.07); color: #cdd9f0; }
+.topic-btn.active { background: rgba(56,189,248,.1); color: #38bdf8; }
 .section { display: none; animation: fadeSlide 0.25s ease; }
 .section.active { display: block; }
 @keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -53,7 +50,7 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', s
 .section-hero::before { content: attr(data-icon); position: absolute; right: 48px; top: 50%; transform: translateY(-50%); font-size: 80px; opacity: 0.06; pointer-events: none; }
 .section-hero h1 { font-size: 26px; font-weight: 700; color: var(--text-bright); margin-bottom: 8px; }
 .section-hero .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
-.tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+.tag { font-family: 'IBM Plex Mono', monospace; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
 .tag-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
 .tag-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
 .tag-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
@@ -64,14 +61,14 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', s
 .card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 24px; overflow: hidden; }
 .card-header { padding: 14px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
 .card-header h2 { font-size: 15px; font-weight: 700; color: var(--text-bright); flex: 1; }
-.card-header .header-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+.card-header .header-tag { font-family: 'IBM Plex Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 4px; }
 .card-body { padding: 20px; }
 .terminal { background: #060a0f; border: 1px solid var(--border); border-radius: 8px; margin: 14px 0; overflow: hidden; }
 .terminal-titlebar { background: var(--surface2); padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
 .dot { width: 11px; height: 11px; border-radius: 50%; }
 .dot-r { background: #ef4444; } .dot-y { background: #f59e0b; } .dot-g { background: #22c55e; }
-.terminal-titlebar .tbar-name { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-left: 6px; }
-.terminal-body { padding: 16px 18px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 2; white-space: pre; overflow-x: auto; }
+.terminal-titlebar .tbar-name { font-family: 'IBM Plex Mono', monospace; font-size: 11px; color: var(--text-dim); margin-left: 6px; }
+.terminal-body { padding: 16px 18px; font-family: 'IBM Plex Mono', monospace; font-size: 12.5px; line-height: 2; white-space: pre; overflow-x: auto; }
 .s-prompt { color: var(--green); } .s-cmd { color: var(--text-bright); font-weight: 700; } .s-flag { color: var(--blue); }
 .s-arg { color: var(--yellow); } .s-str { color: var(--orange); } .s-comment { color: var(--text-muted); font-style: italic; }
 .s-out { color: #4a5568; } .s-out-hi { color: var(--cyan); } .s-path { color: var(--purple); }
@@ -93,12 +90,12 @@ body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', s
 .steps { margin: 14px 0; }
 .step { display: flex; gap: 16px; margin-bottom: 20px; position: relative; }
 .step:not(:last-child)::after { content: ''; position: absolute; left: 13px; top: 30px; bottom: -4px; width: 2px; background: var(--border); }
-.step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(251,146,60,0.1); border: 2px solid var(--orange); color: var(--orange); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
+.step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(251,146,60,0.1); border: 2px solid var(--orange); color: var(--orange); font-family: 'IBM Plex Mono', monospace; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
 .step-content { flex: 1; padding-top: 2px; }
 .step-title { font-weight: 700; color: var(--text-bright); margin-bottom: 6px; font-size: 14px; }
 .step-desc { color: var(--text-dim); font-size: 13px; margin-bottom: 8px; }
-.diagram { background: #060a0f; border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.9; margin: 14px 0; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
-code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(96,165,250,0.1); color: var(--cyan); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(96,165,250,0.15); }
+.diagram { background: #060a0f; border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; font-family: 'IBM Plex Mono', monospace; font-size: 11.5px; line-height: 1.9; margin: 14px 0; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+code { font-family: 'IBM Plex Mono', monospace; font-size: 12px; background: rgba(96,165,250,0.1); color: var(--cyan); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(96,165,250,0.15); }
 p { margin-bottom: 10px; } ul { padding-left: 20px; margin-bottom: 10px; } li { margin-bottom: 5px; }
 strong { color: var(--text-bright); } h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 0 8px; }
 .phase-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-dim); margin-bottom: 16px; }
@@ -107,82 +104,43 @@ strong { color: var(--text-bright); } h3 { font-size: 14px; font-weight: 700; co
 <body>
 <div class="layout">
 
-<!-- SIDEBAR -->
-<aside class="sidebar">
-  <div class="sidebar-logo">
-    <div class="title">📗 Part 2</div>
-    <div class="subtitle">環境建置完整教學</div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">第一步：虛擬機</div>
-    <div class="nav-link active" onclick="show('mac')">
-      <span class="nav-icon">🍎</span> Mac 選哪個？
-    </div>
-    <div class="nav-link" onclick="show('orbstack')">
-      <span class="nav-icon">⚡</span> OrbStack（最推薦）
-    </div>
-    <div class="nav-link" onclick="show('vmfusion')">
-      <span class="nav-icon">🖥️</span> VMware Fusion
-    </div>
-    <div class="nav-link" onclick="show('vmware')">
-      <span class="nav-icon">🪟</span> VMware（Windows 版）
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">第二步：Ubuntu</div>
-    <div class="nav-link" onclick="show('ubuntu')">
-      <span class="nav-icon">🐧</span> Ubuntu Server 安裝
-    </div>
-    <div class="nav-link" onclick="show('basic')">
-      <span class="nav-icon">🔧</span> 初始系統設定
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">第三步：Java</div>
-    <div class="nav-link" onclick="show('jdk')">
-      <span class="nav-icon">☕</span> JDK 安裝設定
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">第四步：Web Server</div>
-    <div class="nav-link" onclick="show('nginx')">
-      <span class="nav-icon">🌐</span> Nginx 安裝設定
-    </div>
-    <div class="nav-link" onclick="show('ssl')">
-      <span class="nav-icon">🔒</span> SSL 憑證掛載
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">第五步：AP Server</div>
-    <div class="nav-link" onclick="show('tomcat')">
-      <span class="nav-icon">🐱</span> Tomcat 完整安裝
-    </div>
-    <div class="nav-link" onclick="show('war')">
-      <span class="nav-icon">📦</span> WAR 部署流程
-    </div>
-    <div class="nav-link" onclick="show('service')">
-      <span class="nav-icon">⚡</span> 設定系統服務
-    </div>
-  </div>
-
-  <div class="nav-group">
-    <div class="nav-group-label">進階架構</div>
-    <div class="nav-link" onclick="show('arch')">
-      <span class="nav-icon">🏗️</span> Web vs AP 架構圖
-    </div>
-    <div class="nav-link" onclick="show('lb')">
-      <span class="nav-icon">⚖️</span> Load Balance 設定
-    </div>
-  </div>
-</aside>
-
 <!-- MAIN -->
 <main class="main">
+
+<nav class="topic-nav">
+  <div class="topic-group">
+    <span class="topic-group-label">虛擬機</span>
+    <button class="topic-btn active" onclick="show('mac')">🍎 Mac 選擇</button>
+    <button class="topic-btn" onclick="show('orbstack')">⚡ OrbStack</button>
+    <button class="topic-btn" onclick="show('vmfusion')">🖥️ VMware Fusion</button>
+    <button class="topic-btn" onclick="show('vmware')">🪟 VMware Win</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">Ubuntu</span>
+    <button class="topic-btn" onclick="show('ubuntu')">🐧 安裝</button>
+    <button class="topic-btn" onclick="show('basic')">🔧 初始設定</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">Java</span>
+    <button class="topic-btn" onclick="show('jdk')">☕ JDK</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">Web Server</span>
+    <button class="topic-btn" onclick="show('nginx')">🌐 Nginx</button>
+    <button class="topic-btn" onclick="show('ssl')">🔒 SSL</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">AP Server</span>
+    <button class="topic-btn" onclick="show('tomcat')">🐱 Tomcat</button>
+    <button class="topic-btn" onclick="show('war')">📦 WAR 部署</button>
+    <button class="topic-btn" onclick="show('service')">⚡ 系統服務</button>
+  </div>
+  <div class="topic-group">
+    <span class="topic-group-label">進階</span>
+    <button class="topic-btn" onclick="show('arch')">🏗️ 架構圖</button>
+    <button class="topic-btn" onclick="show('lb')">⚖️ Load Balance</button>
+  </div>
+</nav>
 
 <!-- ===== MAC OVERVIEW ===== -->
 <div class="section active" id="mac">
@@ -260,7 +218,7 @@ strong { color: var(--text-bright); } h3 { font-size: 14px; font-weight: 700; co
     <div class="card">
       <div class="card-header"><h2>OrbStack 是什麼？</h2><span class="header-tag tag-blue">概念</span></div>
       <div class="card-body">
-        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;">
           <div style="color:var(--text-dim);margin-bottom:14px;">OrbStack 架構（比 VMware 輕量）：</div>
           <div style="border:2px solid #334155;border-radius:8px;padding:12px;position:relative;">
             <div style="position:absolute;top:-10px;left:16px;background:#060a0f;padding:0 6px;color:var(--text-dim);font-size:11px;">macOS</div>
@@ -523,7 +481,7 @@ http://my-server.orb.local:8080     <span class="s-comment">← Tomcat Port 8080
     <div class="card">
       <div class="card-header"><h2>VMware 是什麼？為什麼需要它？</h2><span class="header-tag tag-blue">概念</span></div>
       <div class="card-body">
-        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;">
           <div style="border:2px solid #334155;border-radius:8px;padding:12px;position:relative;">
             <div style="position:absolute;top:-10px;left:16px;background:#060a0f;padding:0 6px;color:var(--orange);font-size:11px;">Windows 11</div>
             <div style="border:2px solid #3a2a10;border-radius:6px;padding:12px;margin-top:4px;">
@@ -1419,7 +1377,7 @@ WantedBy=multi-user.target</div>
     <div class="card">
       <div class="card-header"><h2>完整架構圖</h2><span class="header-tag tag-blue">架構</span></div>
       <div class="card-body">
-        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:24px 20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:24px 20px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:0;">
             <div style="color:var(--text-dim);font-size:11px;margin-bottom:6px;">Internet</div>
             <div style="color:var(--text-muted);">│ Port 80 / 443</div>
@@ -1483,7 +1441,7 @@ WantedBy=multi-user.target</div>
     <div class="card">
       <div class="card-header"><h2>問題：多台 Tomcat 的 Session 困境</h2><span class="header-tag tag-red">問題</span></div>
       <div class="card-body">
-        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;">
           <div style="display:flex;flex-direction:column;gap:10px;">
             <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
               <span style="color:var(--text-dim);">使用者 第1次</span>
@@ -1543,7 +1501,7 @@ WantedBy=multi-user.target</div>
     <div class="card">
       <div class="card-header"><h2>解法二：Session 共享（Redis）— 建議</h2><span class="header-tag tag-green">最佳解</span></div>
       <div class="card-body">
-        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'IBM Plex Mono',monospace;font-size:12px;">
           <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
             <div style="color:var(--text-dim);">使用者</div>
             <div style="color:var(--text-muted);">↓</div>
@@ -1626,11 +1584,12 @@ WantedBy=multi-user.target</div>
 <script>
 function show(id) {
   document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
-  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  event.currentTarget.classList.add('active');
+  document.querySelectorAll('.topic-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll(`.topic-btn[onclick="show('${id}')"]`).forEach(b => b.classList.add('active'));
   window.scrollTo(0,0);
 }
 </script>
+<script src="../sidebar.js"></script>
 </body>
 </html>
