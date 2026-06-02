@@ -1,0 +1,1590 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>HTTPS 憑證鏈完整說明</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+TC:wght@400;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg2: #161b27;
+    --bg3: #1e2535;
+    --border: rgba(255,255,255,0.08);
+    --border2: rgba(255,255,255,0.14);
+    --text: #e8eaf0;
+    --text2: #9da5bb;
+    --text3: #6b7590;
+    --purple: #a78bfa;
+    --purple-bg: rgba(167,139,250,0.10);
+    --teal: #34d399;
+    --teal-bg: rgba(52,211,153,0.10);
+    --blue: #60a5fa;
+    --blue-bg: rgba(96,165,250,0.10);
+    --amber: #fbbf24;
+    --amber-bg: rgba(251,191,36,0.10);
+    --red: #f87171;
+    --red-bg: rgba(248,113,113,0.10);
+    --font-body: 'Noto Serif TC', serif;
+    --font-mono: 'JetBrains Mono', monospace;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-body);
+    font-size: 15px;
+    line-height: 1.8;
+    min-height: 100vh;
+  }
+
+  /* ── 頂部橫幅 ── */
+  header {
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border2);
+    padding: 48px 0 40px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  header::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse 60% 80% at 50% -20%, rgba(96,165,250,0.10) 0%, transparent 70%);
+    pointer-events: none;
+  }
+  .header-badge {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    color: var(--blue);
+    border: 1px solid rgba(96,165,250,0.3);
+    border-radius: 99px;
+    padding: 3px 12px;
+    margin-bottom: 18px;
+    text-transform: uppercase;
+  }
+  h1 {
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    margin-bottom: 10px;
+    color: #fff;
+  }
+  .header-sub {
+    color: var(--text2);
+    font-size: 14px;
+    font-family: var(--font-mono);
+  }
+
+  /* ── 主體容器 ── */
+  main {
+    max-width: 860px;
+    margin: 0 auto;
+    padding: 48px 24px 80px;
+  }
+
+  /* ── 信任鏈視覺圖 ── */
+  .chain-overview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 56px;
+    padding: 36px 24px;
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    position: relative;
+  }
+  .chain-overview::before {
+    content: 'PKI 信任鏈（Certificate Chain of Trust）';
+    position: absolute;
+    top: -11px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: var(--bg);
+    padding: 0 12px;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+    white-space: nowrap;
+  }
+  .chain-node {
+    width: 100%;
+    max-width: 580px;
+    border-radius: 12px;
+    padding: 18px 24px;
+    border: 1px solid;
+    position: relative;
+  }
+  .chain-node.root   { border-color: rgba(167,139,250,0.4); background: rgba(167,139,250,0.06); }
+  .chain-node.inter  { border-color: rgba(52,211,153,0.4);  background: rgba(52,211,153,0.06); }
+  .chain-node.leaf   { border-color: rgba(96,165,250,0.4);  background: rgba(96,165,250,0.06); }
+  .chain-node-title { font-size: 15px; font-weight: 600; margin-bottom: 4px; }
+  .chain-node.root   .chain-node-title { color: var(--purple); }
+  .chain-node.inter  .chain-node-title { color: var(--teal); }
+  .chain-node.leaf   .chain-node-title { color: var(--blue); }
+  .chain-node-en { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-bottom: 6px; }
+  .chain-node-desc { font-size: 13px; color: var(--text2); }
+  .chain-arrow {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    padding: 6px 0;
+    color: var(--text3);
+    font-size: 12px;
+    font-family: var(--font-mono);
+  }
+  .chain-arrow::before { content: '│'; font-size: 14px; }
+  .chain-arrow::after  { content: '▼'; font-size: 10px; }
+
+  /* ── 章節 ── */
+  .section {
+    margin-bottom: 40px;
+  }
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+  .section-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .icon-purple { background: var(--purple-bg); }
+  .icon-teal   { background: var(--teal-bg); }
+  .icon-blue   { background: var(--blue-bg); }
+  .icon-amber  { background: var(--amber-bg); }
+  .section-title { font-size: 20px; font-weight: 600; }
+  .section-title span { font-family: var(--font-mono); font-size: 11px; font-weight: 400; color: var(--text3); margin-left: 8px; vertical-align: middle; }
+
+  /* ── 屬性表格 ── */
+  .kv-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+  }
+  .kv-table tr { border-bottom: 1px solid var(--border); }
+  .kv-table tr:last-child { border-bottom: none; }
+  .kv-table td { padding: 12px 8px; vertical-align: top; }
+  .kv-table td:first-child {
+    width: 130px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text3);
+    white-space: nowrap;
+    padding-right: 20px;
+  }
+  .kv-table td:last-child { font-size: 14px; color: var(--text); line-height: 1.7; }
+
+  /* ── 標籤 ── */
+  .tag {
+    display: inline-block;
+    font-family: var(--font-mono);
+    font-size: 11px;
+    padding: 2px 9px;
+    border-radius: 99px;
+    margin: 2px 4px 2px 0;
+    border: 1px solid;
+  }
+  .tag-purple { color: var(--purple); border-color: rgba(167,139,250,0.35); background: var(--purple-bg); }
+  .tag-teal   { color: var(--teal);   border-color: rgba(52,211,153,0.35);  background: var(--teal-bg); }
+  .tag-blue   { color: var(--blue);   border-color: rgba(96,165,250,0.35);  background: var(--blue-bg); }
+  .tag-amber  { color: var(--amber);  border-color: rgba(251,191,36,0.35);  background: var(--amber-bg); }
+  .tag-red    { color: var(--red);    border-color: rgba(248,113,113,0.35); background: var(--red-bg); }
+
+  code, .mono {
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--amber);
+    background: rgba(251,191,36,0.08);
+    padding: 1px 6px;
+    border-radius: 4px;
+  }
+
+  /* ── 提示框 ── */
+  .note {
+    background: var(--bg3);
+    border: 1px solid var(--border2);
+    border-left: 3px solid var(--blue);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 16px;
+    font-size: 13px;
+    color: var(--text2);
+    line-height: 1.7;
+    margin-top: 16px;
+  }
+  .note strong { color: var(--text); }
+  .warn { border-left-color: var(--amber); }
+  .danger { border-left-color: var(--red); }
+
+  /* ── TLS 握手步驟 ── */
+  .steps { display: flex; flex-direction: column; gap: 0; }
+  .step {
+    display: grid;
+    grid-template-columns: 28px 1fr;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    position: relative;
+  }
+  .step:last-child { border-bottom: none; }
+  .step::after {
+    content: '';
+    position: absolute;
+    left: 13px;
+    top: 44px;
+    bottom: -1px;
+    width: 1px;
+    background: var(--border2);
+  }
+  .step:last-child::after { display: none; }
+  .step-num {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    font-weight: 500;
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+  }
+  .num-blue   { background: var(--blue-bg);   color: var(--blue);   border: 1px solid rgba(96,165,250,0.35); }
+  .num-teal   { background: var(--teal-bg);   color: var(--teal);   border: 1px solid rgba(52,211,153,0.35); }
+  .step-content { padding-top: 4px; }
+  .step-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .step-desc  { font-size: 13px; color: var(--text2); line-height: 1.6; }
+
+  /* ── 憑證類型比較 ── */
+  .cert-types { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 4px; }
+  .cert-type {
+    border-radius: 10px;
+    padding: 16px;
+    border: 1px solid;
+  }
+  .ct-dv { border-color: rgba(52,211,153,0.3); background: rgba(52,211,153,0.05); }
+  .ct-ov { border-color: rgba(251,191,36,0.3); background: rgba(251,191,36,0.05); }
+  .ct-ev { border-color: rgba(248,113,113,0.3); background: rgba(248,113,113,0.05); }
+  .ct-label { font-family: var(--font-mono); font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+  .ct-dv .ct-label { color: var(--teal); }
+  .ct-ov .ct-label { color: var(--amber); }
+  .ct-ev .ct-label { color: var(--red); }
+  .ct-name { font-size: 12px; font-weight: 600; margin-bottom: 4px; }
+  .ct-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+
+  /* ── 憑證欄位結構 ── */
+  .cert-fields {
+    background: var(--bg2);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: 12px;
+  }
+  .cf-header {
+    background: var(--bg3);
+    padding: 8px 16px;
+    color: var(--text3);
+    font-size: 11px;
+    letter-spacing: 0.06em;
+    border-bottom: 1px solid var(--border);
+  }
+  .cf-row {
+    display: grid;
+    grid-template-columns: 180px 1fr;
+    padding: 9px 16px;
+    border-bottom: 1px solid var(--border);
+    gap: 16px;
+  }
+  .cf-row:last-child { border-bottom: none; }
+  .cf-key { color: var(--blue); }
+  .cf-val { color: var(--text2); }
+  .cf-val em { color: var(--amber); font-style: normal; }
+
+  /* ── 有效期演進 ── */
+  .validity-timeline { display: flex; flex-direction: column; gap: 10px; margin-top: 4px; }
+  .vt-row { display: flex; align-items: center; gap: 8px; }
+  .vt-year { font-family: var(--font-mono); font-size: 12px; color: var(--text3); width: 48px; flex-shrink: 0; }
+  .vt-bar-wrap { flex: 1; background: var(--bg3); border-radius: 4px; height: 24px; overflow: hidden; }
+  .vt-bar { height: 100%; display: flex; align-items: center; padding-left: 10px; font-family: var(--font-mono); font-size: 11px; border-radius: 4px; white-space: nowrap; }
+  .vt-aside { font-family: var(--font-mono); font-size: 11px; color: var(--text3); white-space: nowrap; flex-shrink: 0; }
+  .vt-label { font-size: 12px; color: var(--text2); width: 120px; flex-shrink: 0; text-align: right; }
+
+  /* ── 分隔線 ── */
+  hr.divider { border: none; border-top: 1px solid var(--border); margin: 40px 0; }
+
+  /* ── 底部 ── */
+  footer {
+    text-align: center;
+    padding: 32px;
+    border-top: 1px solid var(--border);
+    font-family: var(--font-mono);
+    font-size: 11px;
+    color: var(--text3);
+    letter-spacing: 0.06em;
+  }
+
+  @media (max-width: 600px) {
+    h1 { font-size: 24px; }
+    .cert-types { grid-template-columns: 1fr; }
+    .cf-row { grid-template-columns: 140px 1fr; }
+  }
+
+  /* ── code block ── */
+  .code-block {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    line-height: 1.85;
+    margin: 10px 0;
+    overflow-x: auto;
+    white-space: pre;
+  }
+  .c-cm  { color: var(--text3); }
+  .c-str { color: var(--teal); }
+
+  /* ── cert tabs ── */
+  .cert-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 24px;
+    gap: 0;
+  }
+  .ct-tab {
+    padding: 10px 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    color: var(--text3);
+    border-bottom: 2px solid transparent;
+    transition: all .15s;
+    user-select: none;
+    font-family: var(--font-mono);
+  }
+  .ct-tab.active { color: var(--text); border-bottom-color: var(--blue); }
+  .ct-tab:hover:not(.active) { color: var(--text2); }
+  .ct-panel { display: none; }
+  .ct-panel.active { display: block; }
+
+  /* ── cert compare ── */
+  .cert-compare {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 14px 0;
+  }
+  .cc-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    font-size: 13px;
+  }
+  .cc-title { font-weight: 600; margin-bottom: 10px; padding-bottom: 8px; border-bottom: 1px solid var(--border); }
+  .cc-row { color: var(--text2); padding: 3px 0; line-height: 1.5; }
+
+  /* ── method toggle ── */
+  .method-toggle { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; }
+  .method-btn {
+    padding: 6px 14px;
+    border: 1px solid var(--border2);
+    border-radius: 99px;
+    font-size: 12px;
+    cursor: pointer;
+    background: transparent;
+    color: var(--text3);
+    transition: all .15s;
+    font-family: var(--font-mono);
+  }
+  .method-btn.active { background: var(--blue-bg); border-color: rgba(96,165,250,0.4); color: var(--blue); }
+  .method-btn:hover:not(.active) { color: var(--text2); border-color: var(--border2); }
+  .method-panel { display: none; }
+  .method-panel.active { display: block; }
+
+  @media (max-width: 560px) { .cert-compare { grid-template-columns: 1fr; } }
+
+  /* ── 簽發時機 ── */
+  .issuance-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; }
+  .ig-card { border-radius: 12px; border: 1px solid; overflow: hidden; }
+  .ig-root  { border-color: rgba(167,139,250,0.35); }
+  .ig-inter { border-color: rgba(52,211,153,0.35); }
+  .ig-leaf  { border-color: rgba(96,165,250,0.35); }
+  .ig-header { padding: 14px 16px 12px; border-bottom: 1px solid; }
+  .ig-root  .ig-header { background: rgba(167,139,250,0.07); border-color: rgba(167,139,250,0.2); }
+  .ig-inter .ig-header { background: rgba(52,211,153,0.07);  border-color: rgba(52,211,153,0.2); }
+  .ig-leaf  .ig-header { background: rgba(96,165,250,0.07);  border-color: rgba(96,165,250,0.2); }
+  .ig-badge { font-family: var(--font-mono); font-size: 10px; letter-spacing: .06em; margin-bottom: 5px; }
+  .ig-root  .ig-badge { color: var(--purple); }
+  .ig-inter .ig-badge { color: var(--teal); }
+  .ig-leaf  .ig-badge { color: var(--blue); }
+  .ig-title { font-size: 14px; font-weight: 600; margin-bottom: 3px; }
+  .ig-freq  { font-family: var(--font-mono); font-size: 11px; color: var(--text3); }
+  .ig-body  { padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; }
+  .ig-item  { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; color: var(--text2); line-height: 1.6; }
+  .ig-item strong { color: var(--text); }
+  .ig-dot   { width: 5px; height: 5px; border-radius: 50%; background: var(--border2); flex-shrink: 0; margin-top: 7px; }
+  .ig-root  .ig-dot { background: var(--purple); opacity: .6; }
+  .ig-inter .ig-dot { background: var(--teal);   opacity: .6; }
+  .ig-leaf  .ig-dot { background: var(--blue);   opacity: .6; }
+  @media (max-width: 680px) { .issuance-grid { grid-template-columns: 1fr; } }
+
+  /* ── 瀏覽器行為比較 ── */
+  .browser-compare { display: flex; flex-direction: column; gap: 8px; margin-top: 10px; }
+  .bc-row { display: grid; grid-template-columns: 120px 1fr auto; gap: 10px; align-items: start; background: var(--bg3); border-radius: 8px; padding: 10px 12px; border-left: 3px solid; }
+  .bc-chrome { border-left-color: rgba(96,165,250,0.6); }
+  .bc-safari { border-left-color: rgba(248,113,113,0.6); }
+  .bc-firefox { border-left-color: rgba(251,191,36,0.6); }
+  .bc-name { font-family: var(--font-mono); font-size: 11px; font-weight: 500; color: var(--text2); padding-top: 2px; }
+  .bc-chrome .bc-name { color: var(--blue); }
+  .bc-safari .bc-name { color: var(--red); }
+  .bc-firefox .bc-name { color: var(--amber); }
+  .bc-desc { font-size: 12px; color: var(--text2); line-height: 1.6; }
+  .bc-tag { font-family: var(--font-mono); font-size: 10px; padding: 2px 8px; border-radius: 99px; white-space: nowrap; align-self: start; margin-top: 2px; }
+  .bc-tag-ok   { background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(52,211,153,0.3); }
+  .bc-tag-fail { background: var(--red-bg);  color: var(--red);  border: 1px solid rgba(248,113,113,0.3); }
+  .bc-tag-warn { background: var(--amber-bg); color: var(--amber); border: 1px solid rgba(251,191,36,0.3); }
+  @media (max-width: 600px) { .bc-row { grid-template-columns: 1fr auto; } .bc-name { display: none; } }
+
+  /* ── 瀏覽器狀態列 ── */
+  .browser-states { display: flex; flex-direction: column; gap: 8px; }
+  .bs-row { display: grid; grid-template-columns: 32px 1fr auto; gap: 12px; align-items: start; padding: 12px 14px; border-radius: 8px; border: 1px solid; }
+  .bs-ok   { background: rgba(52,211,153,0.05);  border-color: rgba(52,211,153,0.25); }
+  .bs-warn { background: rgba(251,191,36,0.05);  border-color: rgba(251,191,36,0.25); }
+  .bs-fail { background: rgba(107,117,144,0.05); border-color: var(--border); }
+  .bs-icon { font-size: 18px; line-height: 1; padding-top: 2px; }
+  .bs-title { font-size: 13px; font-weight: 600; margin-bottom: 3px; }
+  .bs-desc  { font-size: 12px; color: var(--text2); line-height: 1.55; }
+
+  /* ── 線上工具卡片 ── */
+  .online-tools { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .ot-card { background: var(--bg2); border: 1px solid var(--border); border-radius: 10px; padding: 16px; }
+  .ot-header { display: flex; align-items: baseline; justify-content: space-between; margin-bottom: 4px; }
+  .ot-name  { font-size: 14px; font-weight: 600; }
+  .ot-grade { font-family: var(--font-mono); font-size: 11px; color: var(--blue); background: var(--blue-bg); border: 1px solid rgba(96,165,250,0.3); padding: 1px 8px; border-radius: 99px; }
+  .ot-url   { font-family: var(--font-mono); font-size: 11px; color: var(--text3); margin-bottom: 8px; }
+  .ot-desc  { font-size: 13px; color: var(--text2); line-height: 1.6; margin-bottom: 10px; }
+  .ot-checks { display: flex; flex-wrap: wrap; gap: 6px; }
+  .ot-check { font-family: var(--font-mono); font-size: 11px; color: var(--teal); background: var(--teal-bg); border: 1px solid rgba(52,211,153,0.25); padding: 2px 8px; border-radius: 99px; }
+  @media (max-width: 600px) { .online-tools { grid-template-columns: 1fr; } .bs-row { grid-template-columns: 28px 1fr; } .bs-row .bc-tag { display: none; } }
+
+  /* ── 步驟器 ── */
+  .stepper-nav {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    margin-bottom: 24px;
+  }
+  .sn-dot {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--font-mono);
+    font-size: 12px;
+    color: var(--text3);
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: all .2s;
+  }
+  .sn-dot.active { background: var(--blue-bg); border-color: rgba(96,165,250,0.5); color: var(--blue); }
+  .sn-dot.done   { background: var(--teal-bg); border-color: rgba(52,211,153,0.5); color: var(--teal); }
+  .sn-line { flex: 1; height: 1px; background: var(--border); }
+  .sp { display: none; }
+  .sp.active { display: block; }
+  .sp-header { display: flex; align-items: flex-start; gap: 12px; margin-bottom: 16px; }
+  .sp-icon { width: 38px; height: 38px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 18px; flex-shrink: 0; }
+  .sp-title { font-size: 16px; font-weight: 600; margin-bottom: 3px; }
+  .sp-sub { font-size: 13px; color: var(--text3); font-family: var(--font-mono); }
+  .sp-body { font-size: 14px; line-height: 1.8; color: var(--text); }
+  .sp-cards { display: flex; gap: 10px; margin: 14px 0; flex-wrap: wrap; }
+  .sp-card { flex: 1; min-width: 140px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 14px; font-size: 13px; color: var(--text2); line-height: 1.55; }
+  .sp-card-label { font-family: var(--font-mono); font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 5px; }
+  .sign-flow { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 12px 16px; margin: 14px 0; flex-wrap: wrap; font-size: 13px; }
+  .sf-box { background: var(--bg2); border: 1px solid var(--border2); border-radius: 6px; padding: 4px 10px; color: var(--text2); }
+  .sf-result { border-color: rgba(52,211,153,0.4); color: var(--teal); }
+  .sf-arrow { color: var(--text3); font-size: 12px; white-space: nowrap; }
+  .check-list { list-style: none; padding: 0; margin: 12px 0; }
+  .check-list li { display: flex; gap: 10px; align-items: flex-start; font-size: 13px; padding: 7px 0; border-bottom: 1px solid var(--border); line-height: 1.6; }
+  .check-list li:last-child { border-bottom: none; }
+  .ck-icon { flex-shrink: 0; font-size: 14px; margin-top: 1px; }
+  .chain-mini { display: flex; align-items: center; gap: 8px; background: var(--bg3); border: 1px solid var(--border); border-radius: 8px; padding: 10px 14px; margin: 12px 0; font-size: 13px; flex-wrap: wrap; }
+  .cm-box { border-radius: 6px; padding: 4px 10px; font-size: 12px; font-weight: 500; }
+  .cm-leaf { background: var(--blue-bg); color: var(--blue); border: 1px solid rgba(96,165,250,0.3); }
+  .cm-int  { background: var(--teal-bg); color: var(--teal); border: 1px solid rgba(52,211,153,0.3); }
+  .cm-plus { color: var(--text3); }
+  .stepper-btns { display: flex; justify-content: space-between; align-items: center; margin-top: 20px; padding-top: 16px; border-top: 1px solid var(--border); }
+  .sp-btn { background: transparent; border: 1px solid var(--border2); border-radius: 6px; padding: 7px 16px; font-family: var(--font-mono); font-size: 12px; color: var(--text2); cursor: pointer; transition: all .15s; }
+  .sp-btn:hover { background: var(--bg3); color: var(--text); }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-badge">HTTPS / TLS / PKI</div>
+  <h1>HTTPS 憑證鏈完整說明</h1>
+  <div class="header-sub">Root CA → Intermediate CA → End-Entity Certificate</div>
+</header>
+
+<main>
+
+  <!-- ── 信任鏈總覽 ── -->
+  <div class="chain-overview">
+    <div class="chain-node root">
+      <div class="chain-node-en">Root Certificate Authority</div>
+      <div class="chain-node-title">🔐 根憑證（Root CA）</div>
+      <div class="chain-node-desc">自簽 · 預裝於作業系統 / 瀏覽器 · 有效期 10–25 年 · 離線保存</div>
+    </div>
+    <div class="chain-arrow">簽發</div>
+    <div class="chain-node inter">
+      <div class="chain-node-en">Intermediate Certificate Authority</div>
+      <div class="chain-node-title">🔑 中繼憑證（Intermediate CA）</div>
+      <div class="chain-node-desc">由根 CA 簽發 · 代替根 CA 簽發網站憑證 · 有效期 3–10 年 · 可有多張</div>
+    </div>
+    <div class="chain-arrow">簽發</div>
+    <div class="chain-node leaf">
+      <div class="chain-node-en">End-Entity / Leaf Certificate</div>
+      <div class="chain-node-title">🌐 網站憑證（Leaf）</div>
+      <div class="chain-node-desc">綁定網域與公鑰 · 由伺服器傳送 · 有效期 47 天–1 年</div>
+    </div>
+  </div>
+
+  <!-- ══════════ 根憑證 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-purple">🔐</div>
+      <div>
+        <div class="section-title">根憑證（Root CA Certificate）<span>Root Certificate Authority</span></div>
+      </div>
+    </div>
+
+    <table class="kv-table">
+      <tr>
+        <td>本質</td>
+        <td>自簽憑證（Self-Signed）：簽發者（Issuer）= 主體（Subject），沒有上層 CA，信任鏈的起點</td>
+      </tr>
+      <tr>
+        <td>儲存位置</td>
+        <td>
+          預裝於作業系統與瀏覽器的「信任根憑證清單」中<br>
+          <span class="tag tag-purple">Windows：憑證管理員（certmgr.msc）</span>
+          <span class="tag tag-purple">macOS：Keychain Access</span>
+          <span class="tag tag-purple">Firefox：自己維護獨立清單</span>
+          <span class="tag tag-purple">Android：系統設定 → 安全 → 憑證</span>
+        </td>
+      </tr>
+      <tr>
+        <td>有效期</td>
+        <td>10–25 年（部分甚至更長，例如 DigiCert Global Root CA 有效期至 2031 年）</td>
+      </tr>
+      <tr>
+        <td>私鑰保管</td>
+        <td>離線（Air-gapped）硬體安全模組（HSM），極少動用，通常只在簽發或更新中繼憑證時才啟用</td>
+      </tr>
+      <tr>
+        <td>知名 Root CA</td>
+        <td>
+          <span class="tag tag-purple">DigiCert Global Root CA</span>
+          <span class="tag tag-purple">ISRG Root X1（Let's Encrypt）</span>
+          <span class="tag tag-purple">GlobalSign Root CA</span>
+          <span class="tag tag-purple">Sectigo AAA</span>
+          <span class="tag tag-purple">Google Trust Services</span>
+        </td>
+      </tr>
+      <tr>
+        <td>為何重要</td>
+        <td>瀏覽器信任某網站，最終依據是「信任這張根憑證」。若根 CA 私鑰外洩，整條信任體系全面崩潰，後果極為嚴重</td>
+      </tr>
+      <tr>
+        <td>撤銷困難</td>
+        <td>根憑證已預裝在數十億裝置中，一旦需要撤銷（Revoke），必須透過作業系統 / 瀏覽器的安全更新強制推送，耗時極長</td>
+      </tr>
+    </table>
+
+    <div class="note">
+      🔍 <strong>如何查看：</strong>macOS → Keychain Access → 分類選「憑證」→ 左側選「系統根憑證」，可以看到 200+ 張預裝根憑證，每張都是你瀏覽器隱式信任的起點。
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════ 中繼憑證 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🔑</div>
+      <div>
+        <div class="section-title">中繼憑證（Intermediate CA Certificate）<span>Intermediate Certificate Authority</span></div>
+      </div>
+    </div>
+
+    <table class="kv-table">
+      <tr>
+        <td>存在原因</td>
+        <td>
+          根 CA 若直接簽發網站憑證，私鑰就必須保持線上狀態 → 風險極高。<br>
+          改由中繼 CA 在線上運作，負責日常簽發工作，根 CA 私鑰維持離線
+        </td>
+      </tr>
+      <tr>
+        <td>撤銷隔離</td>
+        <td>
+          中繼 CA 若發生問題（被入侵、錯誤簽發），只需撤銷這張中繼憑證，<strong>不影響根 CA 的信任地位</strong>，也不需要更新所有裝置的根憑證清單
+        </td>
+      </tr>
+      <tr>
+        <td>鏈的層數</td>
+        <td>
+          可以有 1 到 2 張中繼憑證，視 CA 的業務規模與安全架構而定：<br>
+          <span class="tag tag-teal">3 層：Root → Intermediate → Leaf（最常見）</span>
+          <span class="tag tag-amber">4 層：Root → Int-1 → Int-2 → Leaf（大型 CA 常見）</span>
+        </td>
+      </tr>
+      <tr>
+        <td>有效期</td>
+        <td>通常 3–10 年</td>
+      </tr>
+      <tr>
+        <td>傳送方式</td>
+        <td>在 TLS 握手時，由<strong>伺服器</strong>主動傳送給瀏覽器（不像根憑證是本地預裝的）</td>
+      </tr>
+      <tr>
+        <td>設定錯誤</td>
+        <td>如果伺服器未傳送中繼憑證，各瀏覽器的行為差異很大：
+          <div class="browser-compare">
+            <div class="bc-row bc-chrome">
+              <div class="bc-name">Chrome / Edge</div>
+              <div class="bc-desc">內建 <strong>AIA Fetching</strong> 機制，會自動讀取網站憑證裡的 <code>Authority Information Access</code> 欄位，主動去 CA 的 URL 下載缺少的中繼憑證，使用者看不到錯誤</div>
+              <div class="bc-tag bc-tag-ok">自動補齊</div>
+            </div>
+            <div class="bc-row bc-safari">
+              <div class="bc-name">Safari（macOS / iOS）</div>
+              <div class="bc-desc"><strong>不執行 AIA Fetching</strong>，完全依賴伺服器主動傳送完整憑證鏈。若中繼憑證缺少，直接顯示「此伺服器的憑證鏈不完整」，使用者無法繼續連線</div>
+              <div class="bc-tag bc-tag-fail">直接報錯</div>
+            </div>
+            <div class="bc-row bc-firefox">
+              <div class="bc-name">Firefox</div>
+              <div class="bc-desc">維護自己的憑證快取，若過去訪問過使用相同中繼 CA 的網站，可能從快取補齊；但首次訪問時行為類似 Safari，不保證自動修復</div>
+              <div class="bc-tag bc-tag-warn">視快取而定</div>
+            </div>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="note warn">
+      ⚠️ <strong>Nginx / Apache 設定重點：</strong>憑證檔案必須將中繼憑證串接在網站憑證後面，形成完整的 Chain File。<br>
+      格式：<code>cat domain.crt intermediate.crt &gt; fullchain.crt</code><br>
+      Let's Encrypt 自動產生的 <code>fullchain.pem</code> 已包含完整憑證鏈。
+    </div>
+    <div class="note" style="margin-top:10px">
+      💡 <strong>測試建議：</strong>部署後除了用 Chrome 確認，務必也用 Safari（或 iPhone）測試一次。Chrome 自動補齊中繼憑證的特性，會讓你誤以為設定正確，但 Safari 使用者可能已經看到憑證錯誤。也可以用 <code>openssl s_client -connect example.com:443</code> 指令查看伺服器實際傳送的憑證鏈是否完整。
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════ 網站憑證 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-blue">🌐</div>
+      <div>
+        <div class="section-title">網站憑證（End-Entity / Leaf Certificate）<span>Server Certificate</span></div>
+      </div>
+    </div>
+
+    <table class="kv-table">
+      <tr>
+        <td>核心功能</td>
+        <td>將「網域名稱」與「伺服器公鑰」綁定在一起，由中繼 CA 的私鑰簽章背書，證明這把公鑰確實屬於這個網域</td>
+      </tr>
+      <tr>
+        <td>有效期趨勢</td>
+        <td>
+          <div class="validity-timeline">
+            <div class="vt-row">
+              <div class="vt-year">2015</div>
+              <div class="vt-bar-wrap"><div class="vt-bar" style="width:100%;background:rgba(248,113,113,0.2);color:var(--red);white-space:nowrap">最長 3 年（1095 天）</div></div>
+            </div>
+            <div class="vt-row">
+              <div class="vt-year">2020</div>
+              <div class="vt-bar-wrap"><div class="vt-bar" style="width:67%;background:rgba(251,191,36,0.2);color:var(--amber);white-space:nowrap">最長 398 天（Safari 要求）</div></div>
+            </div>
+            <div class="vt-row">
+              <div class="vt-year">2023</div>
+              <div class="vt-bar-wrap"><div class="vt-bar" style="width:25%;background:rgba(52,211,153,0.2);color:var(--teal);white-space:nowrap">Let's Encrypt：90 天</div></div>
+            </div>
+            <div class="vt-row">
+              <div class="vt-year">2026+</div>
+              <div class="vt-bar-wrap"><div class="vt-bar" style="width:22%;background:rgba(96,165,250,0.2);color:var(--blue)">最長 47 天</div></div>
+              <span class="vt-aside">Apple 推動中</span>
+            </div>
+          </div>
+          <div style="margin-top:8px;font-size:12px;color:var(--text3)">有效期縮短趨勢：強迫自動化更新，減少廢棄憑證長期存活的風險</div>
+        </td>
+      </tr>
+      <tr>
+        <td>萬用字元</td>
+        <td>
+          <code>*.example.com</code> 保護所有一層子網域（<code>www</code>、<code>api</code>、<code>admin</code>），但<strong>不</strong>保護 <code>sub.api.example.com</code>（兩層子網域）
+        </td>
+      </tr>
+    </table>
+
+    <!-- 憑證類型 -->
+    <div style="margin: 20px 0 8px; font-size: 13px; color: var(--text2);">憑證驗證類型（DV / OV / EV）</div>
+    <div class="cert-types">
+      <div class="cert-type ct-dv">
+        <div class="ct-label">DV</div>
+        <div class="ct-name">網域驗證</div>
+        <div class="ct-desc">Domain Validated<br><br>只驗證申請者控制該網域，通常幾分鐘內自動完成。Let's Encrypt 全為 DV 類型</div>
+      </div>
+      <div class="cert-type ct-ov">
+        <div class="ct-label">OV</div>
+        <div class="ct-name">組織驗證</div>
+        <div class="ct-desc">Organization Validated<br><br>額外驗證公司是否合法存在（比對工商登記），需 1–3 個工作天。憑證中會包含公司名稱</div>
+      </div>
+      <div class="cert-type ct-ev">
+        <div class="ct-label">EV</div>
+        <div class="ct-name">延伸驗證</div>
+        <div class="ct-desc">Extended Validation<br><br>最嚴格，需提交公司文件、電話核實。早期瀏覽器會顯示綠色公司名稱列，現代瀏覽器已取消此視覺提示</div>
+      </div>
+    </div>
+
+    <!-- 憑證內部欄位 -->
+    <div style="margin: 24px 0 10px; font-size: 13px; color: var(--text2);">憑證欄位結構（X.509 格式）</div>
+    <div class="cert-fields">
+      <div class="cf-header">CERTIFICATE FIELDS</div>
+      <div class="cf-row"><div class="cf-key">Subject CN</div><div class="cf-val"><em>www.example.com</em>（主要網域）</div></div>
+      <div class="cf-row"><div class="cf-key">Subject Alt Names</div><div class="cf-val"><em>www.example.com, api.example.com, *.example.com</em>（多網域 SAN）</div></div>
+      <div class="cf-key" style="display:none"></div>
+      <div class="cf-row"><div class="cf-key">Issuer</div><div class="cf-val">簽發此憑證的中繼 CA 名稱</div></div>
+      <div class="cf-row"><div class="cf-key">Public Key</div><div class="cf-val">RSA 2048-bit 或 ECDSA P-256（對應伺服器本地私鑰）</div></div>
+      <div class="cf-row"><div class="cf-key">Not Before</div><div class="cf-val">憑證生效起始日期</div></div>
+      <div class="cf-row"><div class="cf-key">Not After</div><div class="cf-val">憑證到期日期（瀏覽器強制驗證）</div></div>
+      <div class="cf-row"><div class="cf-key">Signature Algorithm</div><div class="cf-val"><em>sha256WithRSAEncryption</em> 或 <em>ecdsa-with-SHA256</em></div></div>
+      <div class="cf-row"><div class="cf-key">Serial Number</div><div class="cf-val">CA 指定的唯一序號，CRL / OCSP 撤銷時使用</div></div>
+      <div class="cf-row"><div class="cf-key">Signature</div><div class="cf-val">中繼 CA 用私鑰對上述所有欄位的數位簽章（防竄改）</div></div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════ TLS 握手流程 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🤝</div>
+      <div>
+        <div class="section-title">TLS 握手時憑證如何被使用<span>TLS Handshake</span></div>
+      </div>
+    </div>
+
+    <div class="steps">
+      <div class="step">
+        <div class="step-num num-blue">1</div>
+        <div class="step-content">
+          <div class="step-title">Client Hello</div>
+          <div class="step-desc">瀏覽器發送支援的 TLS 版本（1.2 / 1.3）、加密套件清單（Cipher Suites）、亂數（Random Bytes）</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num num-teal">2</div>
+        <div class="step-content">
+          <div class="step-title">Server Hello + 憑證鏈傳送</div>
+          <div class="step-desc">伺服器選定加密套件，並傳送：<strong>網站憑證 + 一張（或多張）中繼憑證</strong>。根憑證不需傳送，因為瀏覽器本地已有</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num num-blue">3</div>
+        <div class="step-content">
+          <div class="step-title">瀏覽器驗證憑證鏈</div>
+          <div class="step-desc">
+            逐層往上驗簽：<br>
+            網站憑證的簽章 → 是否由中繼 CA 的公鑰可驗證？<br>
+            中繼憑證的簽章 → 是否由根 CA 的公鑰可驗證？<br>
+            根憑證 → 是否在本地信任清單中？
+          </div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num num-blue">4</div>
+        <div class="step-content">
+          <div class="step-title">驗證網域 + 有效期</div>
+          <div class="step-desc">SAN 欄位中的網域是否符合你正在連線的主機名稱？Not Before / Not After 是否在有效範圍內？</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num num-blue">5</div>
+        <div class="step-content">
+          <div class="step-title">確認撤銷狀態（OCSP）</div>
+          <div class="step-desc">向 CA 的 OCSP Responder 查詢憑證是否已被撤銷（Revoked）。現代瀏覽器多使用 OCSP Stapling 由伺服器預先附帶查詢結果</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num num-blue">6</div>
+        <div class="step-content">
+          <div class="step-title">金鑰協商（Key Exchange）</div>
+          <div class="step-desc">TLS 1.3 使用 ECDHE，瀏覽器與伺服器各自產生暫時金鑰對，在不傳輸私鑰的情況下協商出相同的 Session Key</div>
+        </div>
+      </div>
+      <div class="step">
+        <div class="step-num num-teal">7</div>
+        <div class="step-content">
+          <div class="step-title">對稱加密通訊開始</div>
+          <div class="step-desc">之後所有 HTTP 請求與回應均以 Session Key 對稱加密傳輸（AES-GCM 等），憑證的工作到此結束</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="note">
+      💡 <strong>憑證在 TLS 中的角色：</strong>僅用於「身份驗證與金鑰協商」階段，實際資料傳輸使用的是對稱加密，憑證本身不加解密任何網頁內容。
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════ 根憑證運作機制 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-purple">⚙️</div>
+      <div>
+        <div class="section-title">根憑證運作機制<span>How Root CA Trust Works</span></div>
+      </div>
+    </div>
+
+    <!-- 步驟導覽 -->
+    <div class="stepper-nav" id="stepper-nav">
+      <div class="sn-dot active" data-step="0" onclick="stepperGo(0)">1</div>
+      <div class="sn-line"></div>
+      <div class="sn-dot" data-step="1" onclick="stepperGo(1)">2</div>
+      <div class="sn-line"></div>
+      <div class="sn-dot" data-step="2" onclick="stepperGo(2)">3</div>
+      <div class="sn-line"></div>
+      <div class="sn-dot" data-step="3" onclick="stepperGo(3)">4</div>
+      <div class="sn-line"></div>
+      <div class="sn-dot" data-step="4" onclick="stepperGo(4)">5</div>
+    </div>
+
+    <!-- 步驟面板 -->
+    <div class="sp active" id="sp-0">
+      <div class="sp-header">
+        <div class="sp-icon icon-blue">💻</div>
+        <div>
+          <div class="sp-title">① 出廠預裝：你的電腦為什麼「天生」就信任 Google？</div>
+          <div class="sp-sub">根憑證清單（Root Store）</div>
+        </div>
+      </div>
+      <div class="sp-body">
+        你買一台新 MacBook，完全沒有瀏覽過任何網站，但打開瀏覽器連到 <code>https://google.com</code> 時，瀏覽器立刻顯示安全的鎖頭圖示。這是因為 Apple 出廠時就已在 macOS 裡預裝了一份「信任根憑證清單（Root Store）」，裡面有 200+ 張根憑證。
+        <div class="sp-cards">
+          <div class="sp-card"><div class="sp-card-label">Windows</div><div>Microsoft Root Program 維護，存於系統登錄檔</div></div>
+          <div class="sp-card"><div class="sp-card-label">macOS / iOS</div><div>Apple Root Program 維護，存於 Keychain</div></div>
+          <div class="sp-card"><div class="sp-card-label">Firefox</div><div>Mozilla 自己維護，不使用系統清單</div></div>
+        </div>
+        這份清單由作業系統廠商嚴格審核，CA 機構必須通過稽核才能被加入。
+      </div>
+      <div class="note">
+        <strong>比喻：</strong>就像你手機出廠就存好了 119（消防）、110（警察）的電話號碼，製造商已先幫你驗證好這些號碼的真實性。
+      </div>
+    </div>
+
+    <div class="sp" id="sp-1">
+      <div class="sp-header">
+        <div class="sp-icon icon-purple">🔐</div>
+        <div>
+          <div class="sp-title">② 根憑證裡面裝了什麼？</div>
+          <div class="sp-sub">公鑰 + 自簽簽章</div>
+        </div>
+      </div>
+      <div class="sp-body">
+        根憑證本質上是一個檔案，裡面最重要的東西只有兩個：
+        <div class="sp-cards">
+          <div class="sp-card"><div class="sp-card-label">Root CA 的公鑰</div><div>用來驗證「這個 CA 簽發的憑證」是否真實。就像一枚蓋章的印章樣本，讓你能比對真假</div></div>
+          <div class="sp-card"><div class="sp-card-label">自簽簽章</div><div>Root CA 用自己的私鑰對自己簽章（自己背書自己），因為沒有上層 CA 可以替它背書</div></div>
+        </div>
+        根憑證的對應<strong>私鑰</strong>則被 CA 機構存在一台完全斷網的電腦（Air-gapped），鎖在實體保險庫裡，每次動用都需要多人同時在場的儀式性程序，並全程錄影。
+      </div>
+      <div class="note warn">
+        <strong>為什麼要這麼謹慎？</strong>根 CA 私鑰就是整個信任體系的「萬能鑰匙」。若私鑰外洩，攻擊者可以偽造任何網站的憑證，瀏覽器完全無法察覺。2011 年荷蘭 CA 機構 DigiNotar 遭入侵即為歷史慘案，最終宣告倒閉。
+      </div>
+    </div>
+
+    <div class="sp" id="sp-2">
+      <div class="sp-header">
+        <div class="sp-icon icon-teal">✍️</div>
+        <div>
+          <div class="sp-title">③「簽發」這個動作是什麼意思？</div>
+          <div class="sp-sub">數位簽章的核心機制</div>
+        </div>
+      </div>
+      <div class="sp-body">
+        「Root CA 簽發中繼憑證」這句話背後的數學操作：
+        <div class="sign-flow">
+          <span class="sf-box">中繼憑證內容</span>
+          <span class="sf-arrow">→ 雜湊 →</span>
+          <span class="sf-box">用 Root CA 私鑰加密</span>
+          <span class="sf-arrow">→</span>
+          <span class="sf-box sf-result">簽章（Signature）</span>
+        </div>
+        這個簽章被附加在中繼憑證裡面。之後任何人只要拿到中繼憑證，都可以用 Root CA 的<strong>公鑰</strong>（就是存在你電腦裡的那個）去解密簽章，再比對憑證內容的雜湊，確認憑證沒有被竄改、確實出自這個 Root CA。
+        <ul class="check-list">
+          <li><span class="ck-icon">🔒</span><span>私鑰加密 → 只有 Root CA 能做（不可偽造）</span></li>
+          <li><span class="ck-icon">🔑</span><span>公鑰解密 → 任何人都能驗證（公開透明）</span></li>
+          <li><span class="ck-icon">🔍</span><span>雜湊比對 → 確認內容沒被竄改（防篡改）</span></li>
+        </ul>
+      </div>
+      <div class="note" style="border-left-color:var(--teal)">
+        <strong>關鍵洞見：</strong>簽章讓「信任」可以被傳遞。Root CA 信任中繼 CA，所以它的簽章讓中繼憑證被信任；中繼 CA 再以同樣方式讓網站憑證被信任。信任沿著鏈條流動。
+      </div>
+    </div>
+
+    <div class="sp" id="sp-3">
+      <div class="sp-header">
+        <div class="sp-icon icon-amber">🌐</div>
+        <div>
+          <div class="sp-title">④ 你連到 https://google.com 時，瀏覽器做了什麼？</div>
+          <div class="sp-sub">即時本地驗證流程</div>
+        </div>
+      </div>
+      <div class="sp-body">
+        Google 伺服器傳來憑證鏈（不含根憑證）：
+        <div class="chain-mini">
+          <span class="cm-box cm-leaf">google.com 網站憑證</span>
+          <span class="cm-plus">+</span>
+          <span class="cm-box cm-int">GTS CA 1C3（中繼）</span>
+          <span style="color:var(--text3);font-size:12px">← 伺服器傳這兩張</span>
+        </div>
+        瀏覽器收到後，在你電腦本地做這些事（完全不需要連線）：
+        <ul class="check-list">
+          <li><span class="ck-icon">①</span><span>拿網站憑證的 Issuer 欄位，找到對應的中繼憑證</span></li>
+          <li><span class="ck-icon">②</span><span>用中繼憑證的公鑰，驗證網站憑證上的簽章 → 確認網站憑證合法</span></li>
+          <li><span class="ck-icon">③</span><span>拿中繼憑證的 Issuer，找到本地根憑證清單</span></li>
+          <li><span class="ck-icon">④</span><span>用根憑證的公鑰，驗證中繼憑證上的簽章 → 確認中繼憑證合法</span></li>
+          <li><span class="ck-icon">⑤</span><span>確認根憑證在本地信任清單中 → 信任成立 ✅</span></li>
+          <li><span class="ck-icon">⑥</span><span>確認網域名稱符合（SAN 欄位）、有效期未過</span></li>
+        </ul>
+      </div>
+      <div class="note">
+        <strong>重點：</strong>根憑證從頭到尾都不需要傳送，也不需要連線查詢，因為它一直靜靜地存在你電腦裡。整個驗證過程在毫秒內完成。
+      </div>
+    </div>
+
+    <div class="sp" id="sp-4">
+      <div class="sp-header">
+        <div class="sp-icon" style="background:var(--red-bg)">⚠️</div>
+        <div>
+          <div class="sp-title">⑤ 如果驗證失敗，會發生什麼？</div>
+          <div class="sp-sub">信任斷鏈的各種情況</div>
+        </div>
+      </div>
+      <div class="sp-body">
+        常見的 HTTPS 錯誤及原因：
+        <ul class="check-list">
+          <li><span class="ck-icon">⚠️</span><span><strong>ERR_CERT_AUTHORITY_INVALID</strong><br>憑證簽發者不在本地根憑證清單 → 常見於自簽憑證、公司內網 CA、或企業 SSL 攔截設備</span></li>
+          <li><span class="ck-icon">⚠️</span><span><strong>ERR_CERT_DATE_INVALID</strong><br>憑證已過期，或電腦時間設定錯誤（瀏覽器以本地時間判斷）</span></li>
+          <li><span class="ck-icon">⚠️</span><span><strong>ERR_CERT_COMMON_NAME_INVALID</strong><br>憑證的 SAN 網域與你連線的網域不符</span></li>
+          <li><span class="ck-icon">⚠️</span><span><strong>憑證鏈不完整</strong><br>伺服器沒有傳中繼憑證，瀏覽器找不到中間那層，信任鏈斷掉</span></li>
+        </ul>
+        另一種特殊情況：<strong>企業 SSL 攔截（Corporate MITM）</strong>—— 公司 IT 在你電腦裡安裝了公司自己的根憑證，讓防火牆設備能解密並重新加密所有 HTTPS 流量，瀏覽器看到的是「合法的」公司憑證，但實際上流量被中間解開過了。
+      </div>
+      <div class="note warn">
+        <strong>核心假設：</strong>整個機制假設「你電腦裡的根憑證清單是可信的」。如果惡意程式偷偷安裝假的根憑證，它就能偽裝任何網站而不被察覺，這也是防止惡意軟體的重要原因之一。
+      </div>
+    </div>
+
+    <!-- 步驟按鈕 -->
+    <div class="stepper-btns">
+      <button id="sp-btn-prev" class="sp-btn" onclick="stepperMove(-1)" style="visibility:hidden">← 上一個概念</button>
+      <span id="sp-label" style="font-size:13px;color:var(--text3)">概念 1 / 5</span>
+      <button id="sp-btn-next" class="sp-btn" onclick="stepperMove(1)">繼續閱讀 →</button>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════ 常見問答 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-purple">❓</div>
+      <div>
+        <div class="section-title">常見問題</div>
+      </div>
+    </div>
+
+    <table class="kv-table">
+      <tr>
+        <td>每個 HTTPS 都有這三種憑證嗎？</td>
+        <td>
+          邏輯上一定有根憑證與網站憑證，中間層數則不固定：<br>
+          <span class="tag tag-teal">2 層：Root → Leaf（罕見，部分企業內網 / 自簽環境）</span><br>
+          <span class="tag tag-blue">3 層：Root → Intermediate → Leaf（最常見）</span><br>
+          <span class="tag tag-purple">4 層：Root → Int-1 → Int-2 → Leaf（大型商業 CA）</span>
+        </td>
+      </tr>
+      <tr>
+        <td>如何查看某網站的憑證鏈？</td>
+        <td>
+          Chrome：點網址列鎖頭 → 連線是安全的 → 憑證有效 → 詳細資訊<br>
+          命令列：<code>openssl s_client -connect example.com:443 -showcerts</code>
+        </td>
+      </tr>
+      <tr>
+        <td>憑證過期了怎麼辦？</td>
+        <td>重新向 CA 申請（自動化工具如 Certbot 可搭配 cron job 在到期前自動更新）。過期憑證瀏覽器會顯示警告，無法正常連線</td>
+      </tr>
+      <tr>
+        <td>HTTP 與 HTTPS 的差別？</td>
+        <td>HTTP 無任何憑證，傳輸明文，任何中間人可攔截讀取或竄改。HTTPS = HTTP over TLS，透過以上憑證機制確保身份真實性、內容加密與完整性</td>
+      </tr>
+    </table>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════ 建立憑證 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🛠️</div>
+      <div>
+        <div class="section-title">如何建立憑證<span>Certificate Creation</span></div>
+      </div>
+    </div>
+
+    <!-- Tab 切換 -->
+    <div class="cert-tabs">
+      <div class="ct-tab active" onclick="certTab('official', this)">正式憑證申請</div>
+      <div class="ct-tab" onclick="certTab('selfsign', this)">自簽憑證（Self-Signed）</div>
+    </div>
+
+    <!-- ── 正式申請 ── -->
+    <div class="ct-panel active" id="ct-official">
+
+      <div class="steps">
+        <div class="step">
+          <div class="step-num num-blue">1</div>
+          <div class="step-content">
+            <div class="step-title">產生私鑰（Private Key）</div>
+            <div class="step-desc">在伺服器本地產生，私鑰永遠不離開伺服器。</div>
+            <pre class="code-block"><span class="c-cm"># RSA 2048-bit（傳統）</span>
+openssl genrsa -out server.key 2048
+
+<span class="c-cm"># ECDSA P-256（現代，更快更小）</span>
+openssl ecparam -name prime256v1 -genkey -noout -out server.key</pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num num-blue">2</div>
+          <div class="step-content">
+            <div class="step-title">產生 CSR（Certificate Signing Request）</div>
+            <div class="step-desc">CSR 是送給 CA 的「申請書」，包含你的公鑰和網域資訊，不含私鑰，可以安全地傳送。</div>
+            <pre class="code-block">openssl req -new -key server.key -out server.csr \
+  -subj <span class="c-str">"/C=TW/ST=Taipei/O=MyCompany/CN=www.example.com"</span>
+
+<span class="c-cm"># 查看 CSR 內容確認</span>
+openssl req -text -noout -in server.csr</pre>
+            <div class="note" style="margin-top:10px">
+              <strong>CSR 包含：</strong>公鑰、網域名稱（CN）、組織資訊。<strong>不包含</strong>私鑰。
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num num-blue">3</div>
+          <div class="step-content">
+            <div class="step-title">選擇 CA 並提交 CSR</div>
+            <div class="step-desc">依需求選擇 CA：</div>
+            <div class="cert-compare">
+              <div class="cc-card">
+                <div class="cc-title">🆓 Let's Encrypt（免費）</div>
+                <div class="cc-row">✅ 完全免費，自動化</div>
+                <div class="cc-row">✅ DV 驗證，幾分鐘完成</div>
+                <div class="cc-row">✅ Certbot 自動申請 + 續期</div>
+                <div class="cc-row">⚠️ 有效期 90 天，需自動更新</div>
+                <div class="cc-row">❌ 不提供 OV / EV</div>
+              </div>
+              <div class="cc-card">
+                <div class="cc-title">💰 商業 CA（付費）</div>
+                <div class="cc-row">✅ DV / OV / EV 都提供</div>
+                <div class="cc-row">✅ 有效期 1 年</div>
+                <div class="cc-row">✅ 客服支援、保險保障</div>
+                <div class="cc-row">⚠️ OV/EV 需提供公司文件</div>
+                <div class="cc-row">💰 DigiCert、Sectigo、GlobalSign</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num num-blue">4</div>
+          <div class="step-content">
+            <div class="step-title">通過網域驗證（DV）</div>
+            <div class="step-desc">CA 需確認你真的控制這個網域，有三種方式：</div>
+            <pre class="code-block"><span class="c-cm"># 方式 1：HTTP 驗證（最常見）</span>
+<span class="c-cm"># CA 要求你在網站放一個特定檔案</span>
+<span class="c-str">http://example.com/.well-known/acme-challenge/abc123</span>
+
+<span class="c-cm"># 方式 2：DNS 驗證（萬用字元憑證必須用這個）</span>
+<span class="c-cm"># 在 DNS 加一筆 TXT 記錄</span>
+_acme-challenge.example.com  TXT  <span class="c-str">"隨機驗證字串"</span>
+
+<span class="c-cm"># 方式 3：Email 驗證</span>
+<span class="c-cm"># 寄信到 admin@example.com 或 webmaster@example.com</span></pre>
+          </div>
+        </div>
+
+        <div class="step">
+          <div class="step-num num-teal">5</div>
+          <div class="step-content">
+            <div class="step-title">取得憑證並部署到伺服器</div>
+            <div class="step-desc">CA 審核通過後給你憑證檔案，需串接中繼憑證再設定到 Nginx / Apache。</div>
+            <pre class="code-block"><span class="c-cm"># 串接成完整憑證鏈</span>
+cat domain.crt intermediate.crt &gt; fullchain.crt
+
+<span class="c-cm"># Nginx 設定</span>
+ssl_certificate     /etc/ssl/fullchain.crt;
+ssl_certificate_key /etc/ssl/server.key;</pre>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:8px;font-size:13px;color:var(--text2);margin-bottom:10px">推薦：使用 Certbot 全自動申請（Let's Encrypt）</div>
+      <pre class="code-block"><span class="c-cm"># 安裝 Certbot（Ubuntu）</span>
+sudo apt install certbot python3-certbot-nginx
+
+<span class="c-cm"># 一行搞定申請 + Nginx 設定</span>
+sudo certbot --nginx -d example.com -d www.example.com
+
+<span class="c-cm"># 自動續期測試</span>
+sudo certbot renew --dry-run</pre>
+      <div class="note" style="border-left-color:var(--teal)">
+        <strong>Certbot 會自動：</strong>產生 CSR、完成 HTTP 驗證、下載憑證 + 中繼憑證、修改 Nginx 設定、定期自動續期。基本上不需要手動跑任何 openssl 指令。
+      </div>
+    </div>
+
+    <!-- ── 自簽憑證 ── -->
+    <div class="ct-panel" id="ct-selfsign">
+      <div class="note warn" style="margin-bottom:20px">
+        <strong>自簽憑證（Self-Signed Certificate）：</strong>你自己當 CA，自己簽自己的憑證。瀏覽器因為不認識這個 CA，<strong>一定會顯示警告</strong>。適合本機開發、公司內網、Docker 容器間通訊。
+      </div>
+
+      <!-- 方法切換 -->
+      <div class="method-toggle">
+        <button class="method-btn active" onclick="certMethod('simple', this)">最簡單（一行）</button>
+        <button class="method-btn" onclick="certMethod('san', this)">含 SAN（正確做法）</button>
+        <button class="method-btn" onclick="certMethod('ca', this)">建立自己的 CA</button>
+      </div>
+
+      <!-- 最簡單 -->
+      <div class="method-panel active" id="mp-simple">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num num-blue">1</div>
+            <div class="step-content">
+              <div class="step-title">一行產生私鑰 + 自簽憑證</div>
+              <pre class="code-block">openssl req -x509 -newkey rsa:2048 \
+  -keyout key.pem -out cert.pem \
+  -days 365 -nodes \
+  -subj <span class="c-str">"/CN=localhost"</span></pre>
+              <div class="step-desc" style="margin-top:8px">
+                <span class="tag tag-blue">-x509</span> 直接產生憑證（跳過 CSR）&nbsp;
+                <span class="tag tag-blue">-nodes</span> 私鑰不加密&nbsp;
+                <span class="tag tag-blue">-days 365</span> 有效期一年
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num num-blue">2</div>
+            <div class="step-content">
+              <div class="step-title">Nginx 設定</div>
+              <pre class="code-block">ssl_certificate     /path/to/cert.pem;
+ssl_certificate_key /path/to/key.pem;</pre>
+            </div>
+          </div>
+        </div>
+        <div class="note danger">
+          <strong>限制：</strong>Chrome 58+ 要求憑證必須有 SAN 欄位，只有 CN 的憑證會報 <code>ERR_CERT_COMMON_NAME_INVALID</code>。若需要瀏覽器測試，請改用「含 SAN」做法。
+        </div>
+      </div>
+
+      <!-- 含 SAN -->
+      <div class="method-panel" id="mp-san">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num num-blue">1</div>
+            <div class="step-content">
+              <div class="step-title">建立設定檔（含 SAN）</div>
+              <pre class="code-block"><span class="c-cm"># openssl.cnf</span>
+[req]
+distinguished_name = req_distinguished_name
+x509_extensions    = v3_req
+prompt             = no
+
+[req_distinguished_name]
+CN = localhost
+
+[v3_req]
+subjectAltName = @alt_names
+
+[alt_names]
+DNS.1 = localhost
+DNS.2 = *.localhost
+IP.1  = 127.0.0.1
+IP.2  = ::1</pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num num-blue">2</div>
+            <div class="step-content">
+              <div class="step-title">產生憑證</div>
+              <pre class="code-block">openssl req -x509 -newkey rsa:2048 \
+  -keyout key.pem -out cert.pem \
+  -days 365 -nodes \
+  -config openssl.cnf</pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num num-teal">3</div>
+            <div class="step-content">
+              <div class="step-title">讓瀏覽器信任（本機開發用）</div>
+              <pre class="code-block"><span class="c-cm"># macOS</span>
+sudo security add-trusted-cert -d -r trustRoot \
+  -k /Library/Keychains/System.keychain cert.pem
+
+<span class="c-cm"># Windows PowerShell（管理員）</span>
+Import-Certificate -FilePath cert.pem \
+  -CertStoreLocation Cert:\LocalMachine\Root</pre>
+            </div>
+          </div>
+        </div>
+        <div class="note" style="border-left-color:var(--teal)">
+          <strong>推薦工具 mkcert：</strong>本機開發最佳解法，自動建立本機 CA、產生含 SAN 的憑證、並自動加入系統信任。<br>
+          <code>brew install mkcert &amp;&amp; mkcert -install &amp;&amp; mkcert localhost 127.0.0.1</code>
+        </div>
+      </div>
+
+      <!-- 建立自己的 CA -->
+      <div class="method-panel" id="mp-ca">
+        <div class="step-desc" style="margin-bottom:16px;color:var(--text2);font-size:13px">
+          適合公司內網：建立自己的根 CA，讓所有內部伺服器的憑證都由它簽發。只需把根 CA 推送到員工電腦，就能消除所有內部憑證警告。
+        </div>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num num-blue">1</div>
+            <div class="step-content">
+              <div class="step-title">建立根 CA 私鑰與憑證</div>
+              <pre class="code-block"><span class="c-cm"># 產生根 CA 私鑰（加密保護）</span>
+openssl genrsa -aes256 -out ca.key 4096
+
+<span class="c-cm"># 產生根 CA 自簽憑證（有效 10 年）</span>
+openssl req -x509 -new -nodes -key ca.key \
+  -sha256 -days 3650 -out ca.crt \
+  -subj <span class="c-str">"/C=TW/O=MyOrg/CN=MyOrg Root CA"</span></pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num num-blue">2</div>
+            <div class="step-content">
+              <div class="step-title">為每台伺服器產生私鑰 + CSR</div>
+              <pre class="code-block">openssl genrsa -out server.key 2048
+
+openssl req -new -key server.key -out server.csr \
+  -subj <span class="c-str">"/CN=internal.myorg.com"</span> \
+  -addext <span class="c-str">"subjectAltName=DNS:internal.myorg.com,DNS:*.myorg.com"</span></pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num num-blue">3</div>
+            <div class="step-content">
+              <div class="step-title">用根 CA 簽發伺服器憑證</div>
+              <pre class="code-block">openssl x509 -req -in server.csr \
+  -CA ca.crt -CAkey ca.key \
+  -CAcreateserial \
+  -out server.crt -days 365 -sha256</pre>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num num-teal">4</div>
+            <div class="step-content">
+              <div class="step-title">把根 CA 推送到員工電腦</div>
+              <pre class="code-block"><span class="c-cm"># macOS 手動</span>
+sudo security add-trusted-cert -d -r trustRoot \
+  -k /Library/Keychains/System.keychain ca.crt
+
+<span class="c-cm"># Windows GPO（群組原則，大規模部署）</span>
+<span class="c-cm"># certlm.msc → 受信任根憑證授權單位 → 匯入</span></pre>
+              <div class="step-desc" style="margin-top:8px">推送後，所有由這個 CA 簽發的內部憑證，員工瀏覽器都會顯示安全鎖頭。</div>
+            </div>
+          </div>
+        </div>
+        <div class="note warn">
+          <strong>安全提醒：</strong><code>ca.key</code> 是你的根 CA 私鑰，務必妥善保管並加密存放。若外洩，所有內部憑證的信任基礎即崩潰。
+        </div>
+        <div class="note" style="margin-top:10px">
+          <strong>Spring Boot 額外補充：</strong>若要在 Spring Boot 使用自簽憑證，可轉成 PKCS12 格式：<br>
+          <code>openssl pkcs12 -export -in server.crt -inkey server.key -out keystore.p12 -name server</code><br>
+          再在 <code>application.properties</code> 設定：<br>
+          <code>server.ssl.key-store=classpath:keystore.p12</code><br>
+          <code>server.ssl.key-store-type=PKCS12</code><br>
+          <code>server.ssl.key-store-password=yourpassword</code>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- ══════════ 簽發時機 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-amber">🕐</div>
+      <div>
+        <div class="section-title">各階段憑證的簽發時機<span>When Each Certificate Is Issued</span></div>
+      </div>
+    </div>
+
+    <div class="note" style="margin-bottom:24px">
+      <strong>核心規律：</strong>簽發頻率與憑證在信任鏈的位置成反比 —— 越靠近根的越少動，越靠近使用者的越頻繁換。這是分層設計的目的，讓高風險的頻繁操作遠離根 CA 私鑰。
+    </div>
+
+    <div class="issuance-grid">
+
+      <div class="ig-card ig-root">
+        <div class="ig-header">
+          <div class="ig-badge">Root CA</div>
+          <div class="ig-title">根憑證</div>
+          <div class="ig-freq">幾乎一次性</div>
+        </div>
+        <div class="ig-body">
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>CA 機構成立時</strong>建立，有效期 10–25 年，之後幾乎不動</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>Root CA Rollover：</strong>到期前數年提前建立下一代根憑證，推送至各作業系統，新舊重疊確保過渡期無縫銜接</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>私鑰外洩（極罕見）：</strong>立即廢棄舊根憑證，啟動緊急程序重建整條信任鏈，影響範圍極大（參考 DigiNotar 事件）</div></div>
+        </div>
+      </div>
+
+      <div class="ig-card ig-inter">
+        <div class="ig-header">
+          <div class="ig-badge">Intermediate CA</div>
+          <div class="ig-title">中繼憑證</div>
+          <div class="ig-freq">每 3–10 年</div>
+        </div>
+        <div class="ig-body">
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>正常輪換：</strong>到期前由根 CA 重新簽發，通常提前 6–12 個月作業</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>遭入侵或錯誤簽發：</strong>立即撤銷（CRL/OCSP），重新簽發新的中繼憑證，不影響根 CA</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>業務擴展：</strong>針對不同地區、產品線建立額外的中繼 CA，分散風險</div></div>
+        </div>
+      </div>
+
+      <div class="ig-card ig-leaf">
+        <div class="ig-header">
+          <div class="ig-badge">End-Entity</div>
+          <div class="ig-title">網站憑證</div>
+          <div class="ig-freq">90 天–1 年</div>
+        </div>
+        <div class="ig-body">
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>第一次架設 HTTPS：</strong>申請第一張憑證</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>到期前續期：</strong>Let's Encrypt 90 天、商業 CA 1 年。Certbot 可設定自動在到期前 30 天更新</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>網域變更：</strong>新增或移除 SAN 網域時，舊憑證無法修改，需重新申請</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>私鑰外洩或疑似入侵：</strong>立即撤銷並重新產生私鑰 + 申請新憑證，不能沿用舊私鑰</div></div>
+          <div class="ig-item"><div class="ig-dot"></div><div><strong>更換或重建伺服器：</strong>私鑰不應跨機器搬移，在新機器重新產生即可</div></div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+
+  <hr class="divider">
+
+  <!-- ══════════ 如何判斷有無憑證 ══════════ -->
+  <div class="section">
+    <div class="section-header">
+      <div class="section-icon icon-teal">🔍</div>
+      <div>
+        <div class="section-title">如何判斷有沒有憑證<span>How to Verify a Certificate</span></div>
+      </div>
+    </div>
+
+    <!-- ① 瀏覽器肉眼判斷 -->
+    <div style="font-size:13px;color:var(--text2);margin-bottom:10px">① 瀏覽器肉眼判斷</div>
+    <div class="browser-states">
+      <div class="bs-row bs-ok">
+        <div class="bs-icon">🔒</div>
+        <div class="bs-content">
+          <div class="bs-title">鎖頭圖示 + <code>https://</code></div>
+          <div class="bs-desc">有憑證，且驗證完全通過。點鎖頭可查看憑證詳細資訊</div>
+        </div>
+        <div class="bc-tag bc-tag-ok">正常</div>
+      </div>
+      <div class="bs-row bs-warn">
+        <div class="bs-icon">⚠️</div>
+        <div class="bs-content">
+          <div class="bs-title">鎖頭上有警告符號或紅色斜線</div>
+          <div class="bs-desc">有憑證但驗證失敗：過期、自簽、憑證鏈不完整、網域不符等</div>
+        </div>
+        <div class="bc-tag bc-tag-warn">異常</div>
+      </div>
+      <div class="bs-row bs-fail">
+        <div class="bs-icon">🌐</div>
+        <div class="bs-content">
+          <div class="bs-title"><code>http://</code> 開頭，無鎖頭</div>
+          <div class="bs-desc">完全沒有 TLS，所有傳輸皆為明文，無任何憑證保護</div>
+        </div>
+        <div class="bc-tag bc-tag-fail">無憑證</div>
+      </div>
+    </div>
+
+    <!-- ② 指令列 -->
+    <div style="font-size:13px;color:var(--text2);margin:24px 0 10px">② 指令列（最準確）</div>
+    <div class="steps">
+      <div class="step">
+        <div class="step-num num-blue">1</div>
+        <div class="step-content">
+          <div class="step-title">查看完整憑證鏈（含中繼憑證）</div>
+          <div class="step-desc">最重要的指令，可確認伺服器實際傳送了哪些憑證，用來診斷 Safari 憑證鏈不完整問題。</div>
+          <pre class="code-block">openssl s_client -connect example.com:443 -showcerts
+
+<span class="c-cm"># 輸出結果中，每個 BEGIN CERTIFICATE ... END CERTIFICATE 是一張憑證</span>
+<span class="c-cm"># 正常應看到 2 張（網站憑證 + 中繼憑證）</span>
+<span class="c-cm"># 只看到 1 張 → 伺服器沒傳中繼憑證，Safari 會報錯</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num num-blue">2</div>
+        <div class="step-content">
+          <div class="step-title">快速查看憑證基本資訊</div>
+          <div class="step-desc">一行看到網域、發行者、有效期起訖。</div>
+          <pre class="code-block">echo | openssl s_client -connect example.com:443 2>/dev/null   | openssl x509 -noout -subject -issuer -dates
+
+<span class="c-cm"># 範例輸出：</span>
+<span class="c-cm"># subject=CN=example.com</span>
+<span class="c-cm"># issuer=CN=GTS CA 1C3, O=Google Trust Services LLC</span>
+<span class="c-cm"># notBefore=Mar  1 00:00:00 2025 GMT</span>
+<span class="c-cm"># notAfter =May 30 00:00:00 2025 GMT</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num num-blue">3</div>
+        <div class="step-content">
+          <div class="step-title">只查到期日</div>
+          <pre class="code-block">echo | openssl s_client -connect example.com:443 2>/dev/null   | openssl x509 -noout -enddate
+
+<span class="c-cm"># notAfter=May 30 00:00:00 2025 GMT</span></pre>
+        </div>
+      </div>
+
+      <div class="step">
+        <div class="step-num num-teal">4</div>
+        <div class="step-content">
+          <div class="step-title">驗證憑證鏈完整性（模擬 Safari 行為）</div>
+          <div class="step-desc">加上 <code>-verify_return_error</code> 讓 openssl 嚴格驗證，不自動補中繼憑證，最接近 Safari 的行為。</div>
+          <pre class="code-block">openssl s_client -connect example.com:443   -verify_return_error   -partial_chain 2>&amp;1 | grep -E "Verify|error|chain"
+
+<span class="c-cm"># 正常：Verify return code: 0 (ok)</span>
+<span class="c-cm"># 異常：verify error:num=20:unable to get local issuer certificate</span></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- ③ 線上工具 -->
+    <div style="font-size:13px;color:var(--text2);margin:8px 0 10px">③ 線上工具</div>
+    <div class="online-tools">
+      <div class="ot-card">
+        <div class="ot-header">
+          <div class="ot-name">SSL Labs</div>
+          <div class="ot-grade">A–F 評分</div>
+        </div>
+        <div class="ot-url">ssllabs.com/ssltest</div>
+        <div class="ot-desc">最完整的憑證健康檢查工具。檢查憑證鏈、加密套件強度、已知漏洞（BEAST、POODLE 等），並給出整體評分。部署後必測。</div>
+        <div class="ot-checks">
+          <span class="ot-check">✓ 憑證鏈完整性</span>
+          <span class="ot-check">✓ 加密強度</span>
+          <span class="ot-check">✓ 已知漏洞</span>
+          <span class="ot-check">✓ HSTS 設定</span>
+        </div>
+      </div>
+      <div class="ot-card">
+        <div class="ot-header">
+          <div class="ot-name">whatsmychaincert.com</div>
+          <div class="ot-grade">鏈診斷</div>
+        </div>
+        <div class="ot-url">whatsmychaincert.com</div>
+        <div class="ot-desc">專門診斷憑證鏈是否完整，並明確告訴你伺服器有沒有傳送中繼憑證。Safari 憑證問題的最佳診斷工具。</div>
+        <div class="ot-checks">
+          <span class="ot-check">✓ 中繼憑證偵測</span>
+          <span class="ot-check">✓ Safari 相容性</span>
+          <span class="ot-check">✓ 快速結果</span>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer>
+  HTTPS / TLS / PKI 憑證鏈說明文件 · Certificate Chain of Trust · X.509
+</footer>
+
+<script>
+  var spCur = 0;
+  var spTotal = 5;
+  function stepperGo(n) {
+    document.getElementById('sp-' + spCur).classList.remove('active');
+    var dots = document.querySelectorAll('.sn-dot');
+    dots[spCur].classList.remove('active');
+    if (n > spCur) dots[spCur].classList.add('done');
+    else dots[spCur].classList.remove('done');
+    spCur = n;
+    document.getElementById('sp-' + spCur).classList.add('active');
+    dots[spCur].classList.add('active');
+    dots[spCur].classList.remove('done');
+    document.getElementById('sp-btn-prev').style.visibility = spCur === 0 ? 'hidden' : 'visible';
+    document.getElementById('sp-btn-next').style.visibility = spCur === spTotal - 1 ? 'hidden' : 'visible';
+    document.getElementById('sp-label').textContent = '概念 ' + (spCur + 1) + ' / ' + spTotal;
+  }
+  function stepperMove(d) {
+    var next = spCur + d;
+    if (next >= 0 && next < spTotal) stepperGo(next);
+  }
+  function certTab(t, el) {
+    document.querySelectorAll('.ct-tab').forEach(function(e){ e.classList.remove('active'); });
+    document.querySelectorAll('.ct-panel').forEach(function(e){ e.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('ct-' + t).classList.add('active');
+  }
+  function certMethod(m, el) {
+    el.closest('.ct-panel').querySelectorAll('.method-btn').forEach(function(e){ e.classList.remove('active'); });
+    el.closest('.ct-panel').querySelectorAll('.method-panel').forEach(function(e){ e.classList.remove('active'); });
+    el.classList.add('active');
+    document.getElementById('mp-' + m).classList.add('active');
+  }
+</script>
+</body>
+</html>
