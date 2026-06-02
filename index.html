@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Tech Wiki</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Helvetica, Arial, sans-serif;
+    background: #0d1117;
+    color: #e6edf3;
+    min-height: 100vh;
+    padding: 48px 24px;
+  }
+
+  header {
+    max-width: 800px;
+    margin: 0 auto 48px;
+  }
+
+  header h1 {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #f0f6fc;
+    margin-bottom: 8px;
+  }
+
+  header p {
+    color: #8b949e;
+    font-size: 0.95rem;
+  }
+
+  .categories {
+    max-width: 800px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 32px;
+  }
+
+  .category h2 {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: #8b949e;
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid #21262d;
+  }
+
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(340px, 1fr));
+    gap: 12px;
+  }
+
+  .card {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    background: #161b22;
+    border: 1px solid #21262d;
+    border-radius: 8px;
+    padding: 16px 20px;
+    text-decoration: none;
+    color: inherit;
+    transition: border-color 0.15s, background 0.15s;
+  }
+
+  .card:hover {
+    border-color: #388bfd;
+    background: #1c2128;
+  }
+
+  .card-icon {
+    font-size: 1.4rem;
+    flex-shrink: 0;
+    width: 36px;
+    text-align: center;
+  }
+
+  .card-body {}
+
+  .card-title {
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #f0f6fc;
+    margin-bottom: 3px;
+  }
+
+  .card-desc {
+    font-size: 0.8rem;
+    color: #8b949e;
+  }
+
+  footer {
+    max-width: 800px;
+    margin: 56px auto 0;
+    text-align: center;
+    font-size: 0.8rem;
+    color: #484f58;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Tech Wiki</h1>
+  <p>個人技術筆記與學習路線整理</p>
+</header>
+
+<div class="categories">
+
+  <div class="category">
+    <h2>學習路線 Roadmaps</h2>
+    <div class="cards">
+      <a class="card" href="ai-engineer-roadmap/">
+        <div class="card-icon">🤖</div>
+        <div class="card-body">
+          <div class="card-title">AI Engineer Roadmap</div>
+          <div class="card-desc">LLM、Agent 開發學習路線</div>
+        </div>
+      </a>
+      <a class="card" href="backend-architect-roadmap/">
+        <div class="card-icon">🏗️</div>
+        <div class="card-body">
+          <div class="card-title">後端架構師 Roadmap</div>
+          <div class="card-desc">後端系統設計與架構學習路線</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="category">
+    <h2>Linux</h2>
+    <div class="cards">
+      <a class="card" href="linux/part1.html">
+        <div class="card-icon">🐧</div>
+        <div class="card-body">
+          <div class="card-title">Linux 基礎指令詳解</div>
+          <div class="card-desc">Part 1 — 常用指令與操作說明</div>
+        </div>
+      </a>
+      <a class="card" href="linux/part2.html">
+        <div class="card-icon">⚙️</div>
+        <div class="card-body">
+          <div class="card-title">Linux 環境建置完整教學</div>
+          <div class="card-desc">Part 2 — 開發環境安裝與設定</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+  <div class="category">
+    <h2>網路 / Security</h2>
+    <div class="cards">
+      <a class="card" href="ssl/">
+        <div class="card-icon">🔒</div>
+        <div class="card-body">
+          <div class="card-title">HTTPS 憑證鏈完整說明</div>
+          <div class="card-desc">SSL/TLS 憑證鏈運作原理</div>
+        </div>
+      </a>
+    </div>
+  </div>
+
+</div>
+
+<footer>Tech Wiki · CrannyChen</footer>
+
+</body>
+</html>

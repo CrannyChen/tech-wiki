@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AI Engineer Roadmap — LLM & Agent</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #080c14;
+  --panel: #0d1220;
+  --card: #111827;
+  --border: #1e2d4a;
+  --border-hi: #2a4070;
+  --text: #d4e4f7;
+  --text-mid: #8aabbf;
+  --text-dim: #4a6a80;
+  --bright: #f0f8ff;
+  --gold: #f5c842;
+  --teal: #2dd4bf;
+  --violet: #a78bfa;
+  --rose: #fb7185;
+  --sky: #38bdf8;
+  --mono: 'IBM Plex Mono', monospace;
+  --sans: 'Noto Sans TC', sans-serif;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body { background:var(--bg); color:var(--text); font-family:var(--sans); min-height:100vh; overflow-x:hidden; }
+body::before { content:''; position:fixed; inset:0; background-image: linear-gradient(rgba(56,189,248,0.025) 1px,transparent 1px), linear-gradient(90deg,rgba(56,189,248,0.025) 1px,transparent 1px); background-size:48px 48px; pointer-events:none; z-index:0; }
+.wrap { max-width:1080px; margin:0 auto; padding:48px 24px 100px; position:relative; z-index:1; }
+
+/* Header */
+.hdr { margin-bottom:52px; animation:fadeD .6s ease both; }
+.hdr-tag { font-family:var(--mono); font-size:10px; letter-spacing:4px; color:var(--sky); opacity:.7; margin-bottom:14px; text-transform:uppercase; }
+.hdr h1 { font-size:clamp(34px,6vw,60px); font-weight:700; color:var(--bright); line-height:1.08; letter-spacing:-1px; }
+.hdr h1 em { font-style:normal; color:var(--gold); }
+.hdr-sub { margin-top:14px; font-family:var(--mono); font-size:12px; color:var(--text-mid); line-height:1.8; max-width:620px; }
+.hdr-pills { display:flex; flex-wrap:wrap; gap:8px; margin-top:20px; }
+.pill { font-family:var(--mono); font-size:10px; padding:4px 12px; border:1px solid var(--border-hi); border-radius:3px; color:var(--text-mid); letter-spacing:1px; }
+
+/* Nav */
+.ch-nav { display:flex; gap:0; border-bottom:1px solid var(--border); margin-bottom:44px; overflow-x:auto; animation:fadeD .6s .1s ease both; }
+.ch-btn { font-family:var(--mono); font-size:11px; padding:12px 22px; background:transparent; border:none; border-bottom:2px solid transparent; color:var(--text-dim); cursor:pointer; letter-spacing:1px; white-space:nowrap; transition:all .2s; margin-bottom:-1px; text-transform:uppercase; }
+.ch-btn:hover { color:var(--text); }
+.ch-btn.active { color:var(--bright); border-bottom-color:var(--cc,var(--gold)); font-weight:700; }
+.chapter { display:none; }
+.chapter.active { display:block; }
+
+/* Section */
+.sec { margin-bottom:40px; animation:fadeU .45s ease both; }
+.sec-hdr { display:flex; align-items:center; gap:12px; margin-bottom:18px; }
+.sec-num { font-family:var(--mono); font-size:10px; color:var(--text-dim); letter-spacing:2px; }
+.sec-name { font-family:var(--mono); font-size:12px; font-weight:700; letter-spacing:2.5px; text-transform:uppercase; }
+.sec-line { flex:1; height:1px; background:var(--border); }
+.lbadge { font-family:var(--mono); font-size:9px; letter-spacing:1.5px; padding:3px 10px; border-radius:3px; text-transform:uppercase; }
+.lb-f  { background:rgba(245,200,66,.15);  color:var(--gold);   border:1px solid rgba(245,200,66,.3); }
+.lb-a  { background:rgba(45,212,191,.12);  color:var(--teal);   border:1px solid rgba(45,212,191,.3); }
+.lb-ag { background:rgba(167,139,250,.12); color:var(--violet); border:1px solid rgba(167,139,250,.3); }
+.lb-p  { background:rgba(251,113,133,.12); color:var(--rose);   border:1px solid rgba(251,113,133,.3); }
+
+/* Cards */
+.cards { display:grid; grid-template-columns:repeat(auto-fill,minmax(310px,1fr)); gap:14px; align-items:start; }
+.card { background:var(--card); border:1px solid var(--border); border-radius:8px; overflow:hidden; cursor:pointer; transition:all .22s; position:relative; }
+.card::after { content:''; position:absolute; top:0;left:0;right:0; height:2px; background:var(--c,var(--gold)); transform:scaleX(0); transform-origin:left; transition:transform .3s; }
+.card:hover { border-color:var(--c,var(--gold)); box-shadow:0 6px 28px rgba(0,0,0,.5); transform:translateY(-2px); }
+.card:hover::after,.card.open::after { transform:scaleX(1); }
+.card.open { border-color:var(--c,var(--gold)); }
+.c-head { padding:18px 18px 14px; display:flex; align-items:flex-start; gap:12px; }
+.c-icon { font-size:20px; flex-shrink:0; margin-top:1px; }
+.c-meta { flex:1; }
+.c-meta h3 { font-size:15px; font-weight:700; color:var(--bright); margin-bottom:3px; line-height:1.3; }
+.c-meta p { font-family:var(--mono); font-size:10px; color:var(--text-dim); }
+.c-tog { font-size:18px; color:var(--text-dim); flex-shrink:0; transition:transform .25s,color .2s; }
+.card.open .c-tog { transform:rotate(45deg); color:var(--c,var(--gold)); }
+.c-body { max-height:0; overflow:hidden; transition:max-height .4s ease; }
+.card.open .c-body { max-height:2400px; }
+.c-content { padding:0 18px 20px; border-top:1px solid var(--border); padding-top:16px; }
+
+/* Skill list */
+.sklist { list-style:none; }
+.skitem { display:flex; gap:10px; padding:9px 0; border-bottom:1px solid rgba(255,255,255,.04); align-items:flex-start; }
+.skitem:last-child { border-bottom:none; }
+.sk-dot { width:6px; height:6px; border-radius:50%; background:var(--c,var(--gold)); margin-top:7px; flex-shrink:0; }
+.sk-body { flex:1; }
+.sk-en { font-size:13px; font-weight:600; color:var(--bright); line-height:1.45; }
+.sk-zh { font-family:var(--mono); font-size:10px; color:var(--text-mid); margin-top:3px; line-height:1.6; }
+.sub { list-style:none; margin-top:6px; display:flex; flex-direction:column; gap:2px; }
+.sub li { font-family:var(--mono); font-size:10px; color:var(--text-mid); padding-left:12px; position:relative; line-height:1.7; }
+.sub li::before { content:'–'; position:absolute; left:0; color:var(--text-dim); }
+
+/* Tutorial */
+.tut { margin-top:16px; background:rgba(0,0,0,.3); border-radius:6px; padding:14px 16px; border-left:3px solid var(--c,var(--gold)); }
+.tut-ttl { font-family:var(--mono); font-size:9px; letter-spacing:2.5px; color:var(--text-dim); text-transform:uppercase; margin-bottom:10px; }
+.tut-step { display:flex; gap:10px; margin-bottom:8px; align-items:flex-start; }
+.tut-n { font-family:var(--mono); font-size:10px; font-weight:700; color:var(--c,var(--gold)); min-width:22px; line-height:1.9; }
+.tut-t { font-size:12px; color:var(--text); line-height:1.8; }
+.tut-t code { font-family:var(--mono); font-size:10px; background:rgba(255,255,255,.07); color:var(--sky); padding:1px 5px; border-radius:3px; }
+
+/* Tags */
+.tags { display:flex; flex-wrap:wrap; gap:6px; margin-top:14px; }
+.tag { font-family:var(--mono); font-size:9px; padding:3px 9px; border-radius:3px; border:1px solid; letter-spacing:.5px; opacity:.8; }
+
+/* Note */
+.note { margin-top:14px; padding:12px 14px; border-radius:5px; background:rgba(255,255,255,.03); border:1px solid var(--border); }
+.note-ttl { font-family:var(--mono); font-size:9px; letter-spacing:2px; color:var(--text-dim); text-transform:uppercase; margin-bottom:8px; }
+.note p,.note li { font-size:12px; color:var(--text-mid); line-height:1.8; }
+.note ul { padding-left:16px; }
+
+/* Comparison table */
+.cmp { width:100%; border-collapse:collapse; margin-top:10px; font-size:11px; }
+.cmp th { font-family:var(--mono); font-size:9px; letter-spacing:1.5px; color:var(--text-dim); text-transform:uppercase; text-align:left; padding:6px 10px; border-bottom:1px solid var(--border); }
+.cmp td { padding:8px 10px; border-bottom:1px dashed rgba(255,255,255,.05); color:var(--text); vertical-align:top; line-height:1.6; }
+.cmp tr:last-child td { border-bottom:none; }
+.cmp td:first-child { font-family:var(--mono); font-size:10px; color:var(--c,var(--gold)); font-weight:700; white-space:nowrap; }
+
+/* Stats */
+.stats { display:grid; grid-template-columns:repeat(4,1fr); gap:1px; background:var(--border); border:1px solid var(--border); border-radius:8px; overflow:hidden; margin-top:64px; }
+.stat { background:var(--panel); padding:20px; text-align:center; }
+.stat-n { font-family:var(--mono); font-size:32px; font-weight:700; color:var(--bright); }
+.stat-l { font-family:var(--mono); font-size:10px; color:var(--text-dim); margin-top:5px; letter-spacing:1px; }
+
+@keyframes fadeD { from{opacity:0;transform:translateY(-16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeU { from{opacity:0;transform:translateY(18px)} to{opacity:1;transform:translateY(0)} }
+@media(max-width:600px){ .stats{grid-template-columns:repeat(2,1fr);} .ch-btn{padding:10px 14px;font-size:10px;} }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<div class="hdr">
+  <div class="hdr-tag">// LEARNING ROADMAP · VOL.2</div>
+  <h1>AI Engineer<br><em>LLM & Agent</em></h1>
+  <div class="hdr-sub">從 Transformer 原理到 Agent 系統設計，從 RAG 架構到生產部署監控。<br>後端工程師進入 AI 工程領域的完整技術地圖。</div>
+  <div class="hdr-pills">
+    <span class="pill">LLM Application</span><span class="pill">RAG</span><span class="pill">Agent</span><span class="pill">Fine-tuning</span><span class="pill">LLMOps</span><span class="pill">Spring AI</span>
+  </div>
+</div>
+
+<div class="ch-nav">
+  <button class="ch-btn active" style="--cc:var(--gold)"   onclick="sw('f',this)">🟡 基礎層</button>
+  <button class="ch-btn"        style="--cc:var(--teal)"   onclick="sw('a',this)">🟢 應用層 RAG</button>
+  <button class="ch-btn"        style="--cc:var(--violet)" onclick="sw('ag',this)">🔵 Agent 層</button>
+  <button class="ch-btn"        style="--cc:var(--rose)"   onclick="sw('p',this)">🔴 生產層</button>
+</div>
+
+<!-- ═══ CH1 基礎 ═══ -->
+<div class="chapter active" id="ch-f">
+
+  <div class="sec" style="animation-delay:.04s">
+    <div class="sec-hdr"><span class="sec-num">01</span><span class="sec-name" style="color:var(--gold)">Transformer 核心原理</span><div class="sec-line"></div><span class="lbadge lb-f">基礎</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--gold)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🧠</span><div class="c-meta"><h3>Attention 機制</h3><p>self-attention & multi-head</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Self-Attention：Q、K、V 計算流程</div><div class="sk-zh">Query × Key → softmax → Value 加權求和；每個 token 同時「看」所有其他 token，計算彼此關聯強度<br>公式：Attention(Q,K,V) = softmax(QKᵀ / √d_k) × V，除以 √d_k 防止梯度消散</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Multi-Head Attention（多頭注意力）</div><div class="sk-zh">把 Attention 並行執行 h 次（每頭有獨立的 W_Q、W_K、W_V 矩陣），捕捉不同子空間的語義關係，最後 concat 再線性變換</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Positional Encoding</div><div class="sk-zh">Transformer 本身無法感知順序，需加入位置資訊。原始論文用 sin/cos 函數；現代 LLM（Llama、Mistral）用 RoPE（旋轉位置編碼），支援更長 context 的外推</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Feed-Forward Network（FFN）</div><div class="sk-zh">Attention 層後接兩層全連接網路 + 啟動函數（GELU / SiLU）；負責儲存「事實知識」；SwiGLU 是現代 LLM 的標準選擇</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Layer Norm & Residual Connection</div><div class="sk-zh">殘差連接讓梯度穩定反傳；Pre-LN（現代，放 Attention 前）比 Post-LN（原始論文）訓練更穩定；RMSNorm 是 Llama 的選擇（更快）</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 學習路徑</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">看 3Blue1Brown《But what is a GPT?》系列，最直覺的動畫解說</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">讀《Attention Is All You Need》論文，重點看 Figure 1 架構圖與 Section 3</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">用 100 行 Python 手刻 Scaled Dot-Product Attention，跑通一次才算真懂</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">Self-Attention</span><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">RoPE</span><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">FFN</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--gold)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🔤</span><div class="c-meta"><h3>Tokenization & Embedding</h3><p>文字如何變成數字</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">BPE（Byte-Pair Encoding）</div><div class="sk-zh">GPT 系列使用的分詞演算法；反覆合併高頻位元組對建立詞彙表；中文通常 1 個字 = 1~2 token（英文約 4 字元 = 1 token）</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Token 實用認知</div><div class="sk-zh">程式碼縮排、空格都算 token；中文 1M tokens ≈ 50萬字；token 數直接影響 API 成本和 context 用量，要養成估算習慣</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Word Embedding vs Contextual Embedding</div><div class="sk-zh">Word2Vec 每個詞固定一個向量（「蘋果」水果 vs 公司 同一向量）；Transformer 每個詞的向量根據上下文動態計算，解決歧義問題</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Context Window & KV Cache</div><div class="sk-zh">模型能處理的最大 token 數（GPT-4o 128K，Claude 200K）；KV Cache 快取歷史 Key/Value，避免每步重新計算，大幅提升推理速度</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 立即練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">到 <code>platform.openai.com/tokenizer</code> 貼入中文、程式碼，觀察 token 分佈</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">用 <code>tiktoken</code>（Python）程式化計算 token 數，整合進自己的 LLM 應用</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">BPE</span><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">Context Window</span><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">KV Cache</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--gold)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🎛️</span><div class="c-meta"><h3>推理參數控制</h3><p>Temperature / Top-p / Sampling</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Temperature</div><div class="sk-zh">控制 logit 分佈的尖銳程度。0 → 永遠選最高機率 token（貪婪、確定性）；1 → 按原始機率；2 → 高度隨機。資料提取用 0，創意寫作用 1~1.2</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Top-p（Nucleus Sampling）</div><div class="sk-zh">從累積機率 ≥ p 的最小 token 集合中採樣。Top-p=0.9 表示只考慮機率加總達 90% 的 token；比 Top-k 更動態自適應，是現代主流</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Repetition Penalty / Frequency Penalty</div><div class="sk-zh">懲罰已出現的 token 讓模型避免重複；結構化輸出（JSON）設低一點避免格式被干擾；對話情境建議 1.1~1.3</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Stop Sequence</div><div class="sk-zh">讓模型遇到特定字串時停止生成；常用 <code>["}", "\n\n", "```"]</code>；控制輸出邊界避免無限生成</div></div></li>
+          </ul>
+          <table class="cmp"><tr><th>情境</th><th>建議設定</th></tr><tr><td>程式碼生成</td><td>Temp 0.1~0.3，Top-p 0.95</td></tr><tr><td>對話問答</td><td>Temp 0.5~0.7，Top-p 0.9</td></tr><tr><td>創意寫作</td><td>Temp 1.0~1.2，Top-p 0.95</td></tr><tr><td>資料提取</td><td>Temp 0，JSON Mode ON</td></tr></table>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec" style="animation-delay:.09s">
+    <div class="sec-hdr"><span class="sec-num">02</span><span class="sec-name" style="color:var(--gold)">主流模型 & 選型</span><div class="sec-line"></div><span class="lbadge lb-f">基礎</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--gold)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🏢</span><div class="c-meta"><h3>閉源商業模型比較</h3><p>OpenAI / Anthropic / Google</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <table class="cmp"><tr><th>模型</th><th>特色 & 適用情境</th></tr><tr><td>GPT-4o</td><td>多模態（文字+圖片+語音）；工具呼叫穩定；適合通用任務</td></tr><tr><td>GPT-4o mini</td><td>成本低 15x；速度快；適合高量低成本批次任務</td></tr><tr><td>o1 / o3</td><td>推理型模型，內建思考鏈；數學/科學/複雜邏輯明顯較強</td></tr><tr><td>Claude 3.5 Sonnet</td><td>200K context；程式碼品質高；指令遵循優秀；適合長文理解</td></tr><tr><td>Gemini 1.5 Pro</td><td>1M context；多模態；與 Google Workspace 深度整合</td></tr></table>
+          <div class="note">
+            <div class="note-ttl">// 選型四個關鍵問題</div>
+            <ul>
+              <li>需要多長的 context？（文件長度決定）</li>
+              <li>有資料隱私顧慮嗎？（考慮開源自架）</li>
+              <li>預算是多少？（每百萬 token 成本差距 10~50x）</li>
+              <li>需要什麼能力？（推理 / 程式碼 / 多模態 / 多語言）</li>
+            </ul>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--gold)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🦙</span><div class="c-meta"><h3>開源模型 & 本地部署</h3><p>Llama / Mistral / Qwen / DeepSeek</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Llama 3.1 / 3.2（Meta）</div><div class="sk-zh">最主流開源模型；8B 本機可跑（需 ~6GB RAM），70B 需高階 GPU；英文強，中文偏弱</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Qwen 2.5（阿里巴巴）</div><div class="sk-zh">目前中文最強開源模型；有 Coder / Math 特化版；72B 效果接近 GPT-4o；台灣繁體中文表現也不錯</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">DeepSeek-V3 / R1</div><div class="sk-zh">V3 訓練成本極低但效果媲美 GPT-4；R1 是推理型，思考鏈公開可見；完全開源可商用</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Mixtral（MoE 架構）</div><div class="sk-zh">Mixture of Experts：8 個 Expert 只啟用 2 個；8×7B 效果接近 70B 但運算量遠小</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">本機部署工具</div><div class="sk-zh"><b>Ollama</b>：命令列管理模型，提供 OpenAI 相容 API（localhost:11434）<br><b>LM Studio</b>：GUI 介面，適合非技術背景試用<br><b>llama.cpp</b>：CPU 推理，支援 Apple Silicon Metal 加速</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 立即上手</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t"><code>brew install ollama</code> → <code>ollama run qwen2.5</code>（中文情境推薦）</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">Ollama API 與 OpenAI 相容，只換 base_url 即可，不改程式邏輯</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">同一個問題分別問 Llama / Qwen / DeepSeek，感受中英文輸出差異</span></div>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec" style="animation-delay:.14s">
+    <div class="sec-hdr"><span class="sec-num">03</span><span class="sec-name" style="color:var(--gold)">Prompt Engineering</span><div class="sec-line"></div><span class="lbadge lb-f">基礎</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--gold)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">✏️</span><div class="c-meta"><h3>核心提示技術</h3><p>CoT / Few-shot / Structured Output</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Zero-shot vs Few-shot</div><div class="sk-zh">Zero-shot 直接描述任務；Few-shot 提供 3~5 個範例讓模型學格式；範例品質比數量重要；範例要覆蓋邊界情況</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Chain-of-Thought（CoT）</div><div class="sk-zh">「Let's think step by step」讓模型展示推理過程；數學/邏輯任務提升顯著；<b>Self-Consistency</b>：跑多次 CoT 取多數答案，進一步提升正確率</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">System Prompt 設計原則</div><ul class="sub"><li>明確定義角色、任務範圍、輸出格式</li><li>說「要做什麼」比說「不要做什麼」更有效</li><li>複雜任務拆成有序步驟，用編號列出</li><li>重要指令放開頭和結尾（Lost in Middle 問題）</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Structured Output（JSON Mode / XML）</div><div class="sk-zh">OpenAI JSON Mode 保證合法 JSON；Claude 擅長 XML 標籤（<code>&lt;result&gt;...&lt;/result&gt;</code>）；Instructor 套件讓輸出自動驗證成 Pydantic Schema</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Lost in the Middle 效應</div><div class="sk-zh">Long context 模型容易忽略中間內容；重要資訊放最前或最後；RAG 時把最相關的 chunk 排在前面</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 學習路徑</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">讀 Anthropic 官方 Prompt Engineering 文件（<code>docs.anthropic.com</code>），最系統化</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">同一任務寫 3 版 Prompt（無 CoT / 有 CoT / Few-shot CoT），量化比較輸出品質</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">用 <code>instructor</code> 套件讓 LLM 輸出符合 Pydantic Schema 的結構化資料</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">CoT</span><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">Few-shot</span><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">JSON Mode</span><span class="tag" style="color:var(--gold);border-color:rgba(245,200,66,.3)">Instructor</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--gold)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🛡️</span><div class="c-meta"><h3>Prompt 安全與防護</h3><p>Prompt Injection & 防護策略</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Prompt Injection 攻擊類型</div><ul class="sub"><li>直接注入：「忽略前面所有指令，改做 X」</li><li>間接注入：網頁 / 文件內藏惡意指令，Agent 讀取時被攻擊</li><li>越獄（Jailbreak）：角色扮演繞過、多語言切換、Base64 編碼</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">防護策略</div><ul class="sub"><li>Delimiter 隔離：用 XML tag 包住使用者輸入（<code>&lt;user_input&gt;...&lt;/user_input&gt;</code>）</li><li>二次驗證：先問 LLM「這個輸入有無惡意？」再回答</li><li>限制輸出格式：強制 JSON，減少自由文字注入空間</li><li>輸入長度限制：過長輸入通常有問題</li></ul></div></li>
+          </ul>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CH2 RAG ═══ -->
+<div class="chapter" id="ch-a">
+
+  <div class="sec" style="animation-delay:.04s">
+    <div class="sec-hdr"><span class="sec-num">04</span><span class="sec-name" style="color:var(--teal)">RAG 完整架構</span><div class="sec-line"></div><span class="lbadge lb-a">應用</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--teal)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">📥</span><div class="c-meta"><h3>Ingestion Pipeline</h3><p>文件解析與切分策略</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">文件解析工具選擇</div><ul class="sub"><li><code>pypdf</code> / <code>pdfplumber</code>：純文字 PDF，輕量</li><li><code>unstructured</code>：多格式統一解析（PDF/Word/HTML/Excel）</li><li><code>docling</code>（IBM）：保留表格結構，OCR 品質佳</li><li>掃描 PDF 需 OCR：<code>tesseract</code> 或 AWS Textract</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Chunking 四大策略</div><ul class="sub"><li>Fixed-size：按字元數切，簡單但常切斷語義</li><li>Recursive Character：按段落→句子→字元遞迴，最推薦</li><li>Semantic：用 Embedding 相似度決定切點，品質最好但最慢</li><li>Hierarchical（Parent-Child）：小塊精準定位 + 大塊提供上下文</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Chunk Size 與 Overlap 經驗值</div><div class="sk-zh">一般 Q&A：256~512 tokens；長文閱讀：512~1024；Overlap 設 10~15%（50~100 tokens）避免語義在邊界截斷；chunk 太小上下文不足，太大雜訊多</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Metadata 提取與保存</div><div class="sk-zh">保存來源（檔名/頁碼/URL）、日期、章節標題、作者；後續可用 Metadata Filter 縮小搜尋範圍（只搜 2024 年的文件）</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">用 <code>LangChain RecursiveCharacterTextSplitter</code> 切分一份 PDF，印出每個 chunk 觀察</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">比較 chunk_size=256 / 512 / 1024 三種設定對搜尋召回品質的影響</span></div>
+          </div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--teal)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🔢</span><div class="c-meta"><h3>Embedding & 向量資料庫</h3><p>語義向量化與儲存</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Embedding 模型選擇</div><ul class="sub"><li>OpenAI text-embedding-3-small：便宜、通用、英文最佳</li><li>BGE-M3（BAAI）：多語言強，中文最推薦開源選項，免費</li><li>Jina Embeddings v3：8192 token 長文支援</li><li>Cohere Embed v3：多語言 + 搜尋/分類雙模式</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">向量相似度計算</div><div class="sk-zh">Cosine Similarity（方向相似度，最常用）；Dot Product（向量需先正規化）；Euclidean Distance（不常用於 NLP）；大多數情況用 Cosine 就對了</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">向量資料庫選型</div><table class="cmp"><tr><th>DB</th><th>特色</th></tr><tr><td>pgvector</td><td>PostgreSQL 擴充，零運維成本，最低門檻</td></tr><tr><td>Qdrant</td><td>Rust 實作高效能，內建 Hybrid Search，推薦</td></tr><tr><td>Weaviate</td><td>內建 BM25，GraphQL API</td></tr><tr><td>Pinecone</td><td>完全 SaaS，零運維但貴</td></tr><tr><td>Chroma</td><td>本地開發快速上手，不適合生產</td></tr></table></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">ANN 索引：HNSW vs IVF</div><div class="sk-zh">HNSW：查詢快、建索引慢、記憶體用量大，是大多數情境的首選；IVF-Flat：資料量特別大時節省記憶體；pgvector 同時支援兩種</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">在現有 PostgreSQL 安裝 <code>pgvector</code>，建 <code>vector(1536)</code> 欄位，插入向量並查詢</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t"><code>docker run -p 6333:6333 qdrant/qdrant</code> 啟 Qdrant，比較 API 設計差異</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">pgvector</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">BGE-M3</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">HNSW</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">Qdrant</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--teal)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🔍</span><div class="c-meta"><h3>Retrieval 進階技術</h3><p>Hybrid Search / Re-ranking / Query 轉換</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Hybrid Search（向量 + 全文）</div><div class="sk-zh">語義搜尋召回「意思相近」；BM25 召回「關鍵詞完全匹配」；兩者互補。用 RRF（Reciprocal Rank Fusion）合併排名，公式：1/(k + rank_i)</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Re-ranking（二階段精排）</div><div class="sk-zh">Bi-Encoder（向量搜尋）初排取 Top-50；Cross-Encoder 逐一計算 (query, doc) 相關性精排取 Top-5；精排模型：<code>bge-reranker-v2-m3</code>、Cohere Rerank</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Query 轉換技術</div><ul class="sub"><li>Query Rewriting：LLM 改寫問題讓搜尋更清晰</li><li>HyDE（假設文件擴展）：先讓 LLM 假設答案，用答案向量搜尋</li><li>Multi-Query：一問題生成多個角度查詢，聯集後去重</li><li>Step-back Prompting：先問更抽象的父問題，再細化</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Context 組裝策略</div><ul class="sub"><li>Stuff：把所有 chunk 塞進 prompt（簡單，token 限制）</li><li>Map-Reduce：各 chunk 單獨問再彙整（適合超長文件）</li><li>Refine：逐塊精煉答案（較慢但品質高）</li></ul></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">加入 Re-ranker（<code>bge-reranker-v2-m3</code>），比較加/不加的 Precision@5</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">實作 HyDE：query → LLM 假設答案 → 向量搜尋，觀察召回率提升</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">Hybrid Search</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">Re-ranking</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">HyDE</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">RRF</span></div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec" style="animation-delay:.09s">
+    <div class="sec-hdr"><span class="sec-num">05</span><span class="sec-name" style="color:var(--teal)">Fine-tuning & RAG 評估</span><div class="sec-line"></div><span class="lbadge lb-a">應用</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--teal)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">⚙️</span><div class="c-meta"><h3>Fine-tuning 方法全覽</h3><p>LoRA / QLoRA / SFT / DPO</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Full Fine-tuning vs LoRA vs QLoRA</div><ul class="sub"><li>Full：更新所有參數；效果最好；70B 模型需 140GB+ VRAM</li><li>LoRA：插入低秩矩陣（A×B），參數量降 100x，推理時合併不增加延遲</li><li>QLoRA：原始模型 4-bit 量化 + bf16 LoRA；8B 模型只需 6GB VRAM</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">SFT（Supervised Fine-Tuning）</div><div class="sk-zh">用（instruction, response）對訓練；讓模型學習特定風格 / 領域術語 / 輸出格式；資料格式：<code>{"messages": [{"role":"user",...},{"role":"assistant",...}]}</code></div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">DPO（Direct Preference Optimization）</div><div class="sk-zh">用（chosen, rejected）對訓練；比 RLHF 更簡單穩定；讓模型輸出更符合人類偏好；不需要獨立的 Reward Model</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">RAG vs Fine-tuning 選擇</div><table class="cmp"><tr><th>情境</th><th>選擇</th></tr><tr><td>知識會定期更新</td><td>RAG</td></tr><tr><td>需要引用來源出處</td><td>RAG</td></tr><tr><td>改變輸出風格/格式</td><td>Fine-tuning</td></tr><tr><td>學習特定領域術語</td><td>Fine-tuning</td></tr><tr><td>最佳效果</td><td>兩者結合</td></tr></table></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">用 <code>Unsloth</code> + QLoRA 在 Colab 免費 T4 GPU 微調 Llama 3.2 3B</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">準備 200 筆 JSONL 格式訓練資料，觀察微調前後輸出的格式與內容差異</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">試用 OpenAI Fine-tuning API 微調 <code>gpt-4o-mini</code>，感受商業雲端流程</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">LoRA</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">QLoRA</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">SFT</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">DPO</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">Unsloth</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--teal)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">📊</span><div class="c-meta"><h3>RAG 評估框架</h3><p>RAGAS & LLM-as-Judge</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">RAGAS 四大指標</div><ul class="sub"><li>Faithfulness（0~1）：答案是否完全基於 Context，防幻覺核心指標</li><li>Answer Relevancy（0~1）：答案是否真的回答了問題</li><li>Context Precision（0~1）：檢索到的 chunk 有多少真正有用</li><li>Context Recall（0~1）：應該找到的資訊有沒有都被召回</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">LLM-as-Judge 評估</div><div class="sk-zh">用 GPT-4 / Claude 對另一個模型輸出評分（1~5 分 + 理由）；設計評分 Rubric 保持一致性；成本低且可擴展，但評分本身有偏差需注意</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Golden Dataset 建立</div><div class="sk-zh">手動標記 50~200 個（問題, 標準答案）對；每次 Prompt 或模型改版後自動跑 regression test；是衡量改進的客觀基準</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t"><code>pip install ragas</code>，對自己的 RAG 系統跑評估，產出 Faithfulness 分數</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">設計 LLM-as-Judge Prompt，讓 Claude 評分 RAG 回答的準確性</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">RAGAS</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">Faithfulness</span><span class="tag" style="color:var(--teal);border-color:rgba(45,212,191,.3)">LLM-as-Judge</span></div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CH3 Agent ═══ -->
+<div class="chapter" id="ch-ag">
+
+  <div class="sec" style="animation-delay:.04s">
+    <div class="sec-hdr"><span class="sec-num">06</span><span class="sec-name" style="color:var(--violet)">Agent 核心設計</span><div class="sec-line"></div><span class="lbadge lb-ag">Agent</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--violet)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🤖</span><div class="c-meta"><h3>Agent 架構與模式</h3><p>ReAct / Plan-Execute / Memory</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Agent Loop（感知→推理→行動→觀察）</div><div class="sk-zh">每個循環：接收環境輸入 → LLM 推理下一步 → 執行工具 → 觀察結果 → 重複直到任務完成或達到最大步數</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">ReAct Pattern（Reason + Act）</div><div class="sk-zh">交錯輸出 Thought → Action → Observation；可解釋每步推理過程；適合工具使用；輸出格式：</div><ul class="sub"><li>Thought: 我需要先查詢使用者的訂單資料</li><li>Action: get_order(user_id=123)</li><li>Observation: [訂單列表...]</li><li>Final Answer: 您有 3 筆訂單...</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Tool / Function Calling 完整流程</div><ul class="sub"><li>① 定義工具 JSON Schema（name / description / parameters）</li><li>② LLM 決定呼叫哪個工具、帶哪些參數</li><li>③ 後端執行實際邏輯（查 DB / 呼叫 API）</li><li>④ 把結果塞回 messages 繼續對話</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Memory 系統四層</div><ul class="sub"><li>Short-term（Working Memory）：對話 Context Window，有限</li><li>Episodic（情節記憶）：具體事件記錄，壓縮後存向量 DB</li><li>Semantic（語義記憶）：知識庫（RAG）</li><li>Procedural（程序記憶）：System Prompt 裡的固定指令</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Planning 策略</div><ul class="sub"><li>Task Decomposition：LLM 先輸出步驟清單再執行</li><li>Plan-and-Execute：規劃和執行分離，規劃者 + 執行者兩個 LLM</li><li>ReWOO：預先生成所有工具呼叫計劃，避免重複推理</li></ul></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 學習路徑</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">用 LangChain <code>create_react_agent</code> 實作含 3 個工具（搜尋/計算/查DB）的 Agent</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">加入 Long-term Memory：把對話摘要存入 pgvector，下次對話可檢索</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">實作 Task Decomposition：Agent 把複雜請求拆成 5 個子任務清單再依序執行</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">ReAct</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">Tool Calling</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">Memory</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">Planning</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--violet)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🌐</span><div class="c-meta"><h3>Multi-Agent 系統設計</h3><p>LangGraph / CrewAI / AutoGen</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Orchestrator-Worker 模式</div><div class="sk-zh">主 Agent 負責任務分解與結果整合；Worker Agent 各自專精（Researcher / Coder / Reviewer）；Worker 對 Orchestrator 報告，不互相直接溝通</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">框架選型</div><table class="cmp"><tr><th>框架</th><th>特色</th></tr><tr><td>LangGraph</td><td>狀態機圖；支援循環、條件分支、Human-in-Loop；最彈性</td></tr><tr><td>CrewAI</td><td>角色定義式；Task / Agent / Crew 抽象；上手最快</td></tr><tr><td>AutoGen</td><td>微軟；對話式 Multi-Agent；適合研究與原型</td></tr><tr><td>Semantic Kernel</td><td>微軟企業級；Java/C#/Python；適合 .NET 生態</td></tr></table></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Human-in-the-Loop（HIL）</div><div class="sk-zh">在關鍵決策點暫停等待人工確認（如「確認要發送這封郵件嗎？」）；LangGraph 用 <code>interrupt()</code> 實作；生產系統的安全閘門，防止自動化失控</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Agent 狀態管理</div><div class="sk-zh">LangGraph 把 Agent 狀態定義成 TypedDict，每個節點讀寫 State；狀態可持久化到資料庫（checkpoint）；支援暫停後恢復執行</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 學習路徑</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">讀 LangGraph 官方文件，理解 Graph / Node / Edge / State 四個核心概念</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">用 CrewAI 實作 Researcher + Writer 雙 Agent：搜尋資料後自動生成技術文章</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">在 LangGraph 加入 <code>interrupt()</code>，讓使用者確認關鍵步驟後才繼續</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">LangGraph</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">CrewAI</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">HIL</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">Checkpoint</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--violet)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🔌</span><div class="c-meta"><h3>MCP — Model Context Protocol</h3><p>Anthropic 開放標準 2024</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">MCP 是什麼？為什麼重要？</div><div class="sk-zh">讓 LLM 連接外部工具的統一標準協定（類似 USB 介面）；沒有 MCP 前，每個 AI 應用要各自實作工具整合；MCP 讓「寫一次 Server，所有 AI Host 都能用」</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">三層架構</div><ul class="sub"><li>Host：Claude Desktop、IDE（Cursor、Windsurf）、自建應用</li><li>Client：每個 MCP 連接的管理者（在 Host 內）</li><li>Server：提供工具的服務（可本地或遠端）</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">三種能力類型</div><ul class="sub"><li>Tools：可執行操作（查資料庫、呼叫 API、讀寫檔案）</li><li>Resources：可讀取資料（檔案內容、DB 記錄、API 回應）</li><li>Prompts：預定義 Prompt 模板（可帶參數）</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">傳輸方式</div><div class="sk-zh">stdio：本地進程通訊（適合 CLI 工具）；SSE（HTTP Server-Sent Events）：遠端 Server；Streamable HTTP（新標準）：更穩定的遠端方案</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">企業應用情境</div><div class="sk-zh">把內部 REST API 包成 MCP Server → 讓 AI 助手安全存取企業資料；可設定認證（API Key / OAuth）；不用暴露資料庫直連</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">讀 <code>modelcontextprotocol.io</code> 官方文件，理解三層架構圖</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">用 Python MCP SDK 寫一個最小 Server，定義 1 個 Tool（查詢天氣）</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">在 <code>~/Library/Application Support/Claude/claude_desktop_config.json</code> 接入自建 Server</span></div>
+            <div class="tut-step"><span class="tut-n">04.</span><span class="tut-t">進階：把現有 Spring Boot REST API 用 Python SDK 包成 MCP Tools</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">MCP</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">Tools</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">Resources</span><span class="tag" style="color:var(--violet);border-color:rgba(167,139,250,.3)">SSE</span></div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- ═══ CH4 生產 ═══ -->
+<div class="chapter" id="ch-p">
+
+  <div class="sec" style="animation-delay:.04s">
+    <div class="sec-hdr"><span class="sec-num">07</span><span class="sec-name" style="color:var(--rose)">模型推理部署</span><div class="sec-line"></div><span class="lbadge lb-p">生產</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--rose)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🚀</span><div class="c-meta"><h3>推理引擎 & 量化技術</h3><p>vLLM / TGI / llama.cpp</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">vLLM（最推薦生產選擇）</div><div class="sk-zh">PagedAttention：KV Cache 分頁管理，大幅減少記憶體碎片；Continuous Batching：動態合併請求，GPU 利用率遠高於靜態 Batching；Throughput 是原生 HuggingFace 的 10~24x</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">TGI（Text Generation Inference，HuggingFace）</div><div class="sk-zh">Flash Attention 2；Tensor Parallelism（多 GPU）；Token Streaming；Docker 映像即用；適合 HuggingFace 模型生態</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">量化技術比較</div><ul class="sub"><li>GGUF（llama.cpp）：CPU 推理 / Apple Silicon；4-bit 量化 7B ≈ 4GB，13B ≈ 8GB</li><li>GPTQ：GPU INT4 量化；精確度損失小</li><li>AWQ（Activation-aware）：量化品質優於 GPTQ；vLLM 原生支援</li><li>FP8：NVIDIA H100/H200 原生支援；精確度損失最小</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">部署方案選型</div><table class="cmp"><tr><th>方案</th><th>適用情境</th></tr><tr><td>API 直呼</td><td>開發期 / 低量 / 快速上線</td></tr><tr><td>vLLM + K8s</td><td>高量生產，需要控制模型版本</td></tr><tr><td>Ollama 本地</td><td>開發測試 / 資料不能離機</td></tr><tr><td>Bedrock / Azure OpenAI</td><td>合規要求 / 企業採購合約</td></tr></table></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t"><code>docker run --gpus all vllm/vllm-openai --model Qwen/Qwen2.5-7B-Instruct</code></span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">用 k6 壓測 vLLM vs 直接 HuggingFace API，比較 tokens/sec</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">在 Mac M 系列用 <code>llama.cpp</code> 跑 GGUF 量化模型，感受本地邊緣推理</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">vLLM</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">PagedAttention</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">GGUF</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">AWQ</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--rose)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">📡</span><div class="c-meta"><h3>Streaming & Latency 優化</h3><p>SSE / Prompt Caching / Speculative Decoding</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Latency 指標</div><ul class="sub"><li>TTFT（Time to First Token）：使用者感知最關鍵，應 &lt; 1s</li><li>TPOT（Time per Output Token）：每個 token 生成時間</li><li>E2E Latency：完整回應時間 = TTFT + (token數 × TPOT)</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Prompt Caching（重要！）</div><div class="sk-zh">Claude 和 GPT-4o 支援 System Prompt 快取；相同前綴不重複計費計算；長 System Prompt 可省 90% token 費用；適合 RAG 的固定 Context</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Speculative Decoding</div><div class="sk-zh">用小 Draft Model 預測多個 token，大 Target Model 批量驗證；成功率高時 2~3x 速度提升；vLLM 原生支援</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">SSE Streaming 實作（Spring Boot）</div><div class="sk-zh"><code>SseEmitter</code>（簡單）或 <code>Flux&lt;String&gt;</code>（WebFlux reactive）；前端用 <code>EventSource</code> / <code>fetch + ReadableStream</code> 接收；需設 <code>Content-Type: text/event-stream</code></div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">Spring Boot 用 <code>SseEmitter</code> 實作 Chat API，前端逐字顯示打字機效果</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">開啟 Claude API 的 Prompt Caching，觀察重複請求的 Token 費用下降</span></div>
+          </div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+
+  <div class="sec" style="animation-delay:.09s">
+    <div class="sec-hdr"><span class="sec-num">08</span><span class="sec-name" style="color:var(--rose)">LLMOps 監控 & 安全</span><div class="sec-line"></div><span class="lbadge lb-p">生產</span></div>
+    <div class="cards">
+
+      <div class="card" style="--c:var(--rose)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🔭</span><div class="c-meta"><h3>LLM Tracing & 監控</h3><p>Langfuse / LangSmith / 成本追蹤</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">需要追蹤的核心指標</div><ul class="sub"><li>Latency：TTFT、P50/P95/P99 回應時間</li><li>Token 用量：Input / Output / Cached token 分開追蹤</li><li>每請求成本：依模型計算，建立成本 Dashboard</li><li>Error Rate：API 失敗、Timeout、格式解析錯誤</li><li>品質分數：LLM-as-Judge 自動評分</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Langfuse（開源，強烈推薦）</div><div class="sk-zh">追蹤每次 LLM 呼叫的完整鏈路；Prompt 版本管理（改版有記錄可回滾）；A/B testing；支援 LangChain / LlamaIndex / OpenAI SDK；可自架保護資料隱私</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Prompt 版本管理</div><div class="sk-zh">每次 Prompt 修改要有版本號（v1.0, v1.1）；生產 Prompt 不能隨意改；要能快速回滾；Langfuse 內建 Prompt Registry</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">成本控制策略</div><ul class="sub"><li>按用戶 / 功能追蹤 Token 消耗</li><li>設定每日 / 每月上限，超過就降級到便宜模型</li><li>善用 Prompt Caching 省重複費用</li><li>非即時任務用 Batch API（OpenAI / Claude 都有，省 50%）</li></ul></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t">用 Docker 部署 Langfuse 開源版，接入自己的 LLM 應用</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">建立 Cost Dashboard，按功能分類追蹤每日 Token 費用趨勢</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">設計 LLM-as-Judge 流程，抽樣 10% 請求自動評分並存入 Langfuse</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Langfuse</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Prompt Registry</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Cost Control</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--rose)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">🛡️</span><div class="c-meta"><h3>Guardrails & Hallucination 防護</h3><p>輸入輸出過濾</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Hallucination 偵測與防護</div><ul class="sub"><li>RAG 引用來源：強制 LLM 只從 Context 回答，加「若 Context 沒有資訊請說不知道」</li><li>Faithfulness 驗證：第二個 LLM 核實答案是否符合 Context</li><li>信心閾值：向量相似度低於閾值 → 直接回「我不知道」</li><li>Self-RAG：讓模型自我評估要不要繼續檢索</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Input Guardrails</div><ul class="sub"><li>PII 偵測：用 Presidio（微軟開源）偵測並遮蔽姓名/電話/身份證</li><li>有害意圖分類：用小型分類模型（DistilBERT）判斷輸入類別</li><li>長度限制：超長輸入通常有攻擊意圖</li><li>Prompt Injection 偵測：關鍵詞過濾 + LLM 二次判斷</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Output Guardrails</div><ul class="sub"><li>JSON Schema 驗證：輸出不符合格式就重試（最多 3 次）</li><li>有害內容過濾：OpenAI Moderation API / Perspective API</li><li>PII 二次遮蔽：輸出前再過濾一次，防止 LLM 洩露訓練資料</li></ul></div></li>
+          </ul>
+          <div class="tags"><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Hallucination</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Presidio</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">PII</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Guardrails AI</span></div>
+        </div></div>
+      </div>
+
+      <div class="card" style="--c:var(--rose)" onclick="tog(this)">
+        <div class="c-head"><span class="c-icon">☕</span><div class="c-meta"><h3>Spring AI — Java 後端整合</h3><p>LLM in Spring Boot</p></div><span class="c-tog">+</span></div>
+        <div class="c-body"><div class="c-content">
+          <ul class="sklist">
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Spring AI 核心抽象</div><ul class="sub"><li><code>ChatClient</code>：流暢 API 呼叫 OpenAI / Claude / Ollama，一行切換模型</li><li><code>EmbeddingModel</code>：文字向量化，支援多種 Embedding 服務</li><li><code>VectorStore</code>：整合 pgvector / Redis / Qdrant / Chroma</li><li><code>DocumentReader</code>：解析 PDF / HTML / Markdown / JSON</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Streaming Chat Controller</div><div class="sk-zh"><code>chatClient.prompt(req).stream().content()</code> 回傳 <code>Flux&lt;String&gt;</code>；Controller 加 <code>produces = MediaType.TEXT_EVENT_STREAM_VALUE</code>；前端用 <code>EventSource</code> 接收</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Function Calling 整合</div><div class="sk-zh">定義 <code>@Bean Function&lt;Input, Output&gt;</code>；Spring AI 自動轉換成 LLM Tool Schema；LLM 決定呼叫時機，後端自動執行並回傳結果</div></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">完整 RAG Pipeline（Java）</div><ul class="sub"><li>PDF → <code>PagePdfDocumentReader</code></li><li>→ <code>TokenTextSplitter</code>（chunk 切分）</li><li>→ <code>EmbeddingModel.embed()</code>（向量化）</li><li>→ <code>PgVectorStore.add()</code>（儲存）</li><li>查詢時：<code>VectorStore.similaritySearch()</code> → 塞進 Prompt</li></ul></div></li>
+            <li class="skitem"><span class="sk-dot"></span><div class="sk-body"><div class="sk-en">Retry & Fallback（Resilience4j）</div><div class="sk-zh">用 <code>@Retry</code> + <code>@CircuitBreaker</code> 包 LLM 呼叫；Rate Limit 429 → 退避重試；主模型失敗 → 自動 Fallback 到備用模型（例如 GPT-4o 失敗 → GPT-4o mini）</div></div></li>
+          </ul>
+          <div class="tut">
+            <div class="tut-ttl">// 動手練習</div>
+            <div class="tut-step"><span class="tut-n">01.</span><span class="tut-t"><code>spring-ai-openai-spring-boot-starter</code> 依賴 + application.yml 設定 API Key，10 行程式碼呼叫 Claude</span></div>
+            <div class="tut-step"><span class="tut-n">02.</span><span class="tut-t">實作 Streaming Chat：<code>Flux&lt;String&gt;</code> Controller + SSE，前端打字機效果</span></div>
+            <div class="tut-step"><span class="tut-n">03.</span><span class="tut-t">整合 pgvector，建立完整 RAG：上傳 PDF → 切分 → 向量化 → 問答</span></div>
+            <div class="tut-step"><span class="tut-n">04.</span><span class="tut-t">用 <code>@Bean Function</code> 讓 LLM 呼叫自己的 Repository 查資料庫</span></div>
+          </div>
+          <div class="tags"><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Spring AI</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">ChatClient</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">SSE Streaming</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">pgvector</span><span class="tag" style="color:var(--rose);border-color:rgba(251,113,133,.3)">Resilience4j</span></div>
+        </div></div>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<!-- Stats -->
+<div class="stats">
+  <div class="stat"><div class="stat-n" style="color:var(--gold)">7</div><div class="stat-l">🟡 基礎層 卡片</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--teal)">5</div><div class="stat-l">🟢 應用層 卡片</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--violet)">3</div><div class="stat-l">🔵 Agent 層 卡片</div></div>
+  <div class="stat"><div class="stat-n" style="color:var(--rose)">5</div><div class="stat-l">🔴 生產層 卡片</div></div>
+</div>
+
+</div>
+
+<script>
+function tog(c){ c.classList.toggle('open'); }
+function sw(id,btn){
+  document.querySelectorAll('.chapter').forEach(c=>c.classList.remove('active'));
+  document.querySelectorAll('.ch-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('ch-'+id).classList.add('active');
+  btn.classList.add('active');
+}
+</script>
+</body>
+</html>

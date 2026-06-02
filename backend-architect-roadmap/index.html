@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>後端架構師 Roadmap</title>
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;600;700&family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0e1a;
+    --panel: #0f1525;
+    --border: #1e2d4a;
+    --accent: #00d4ff;
+    --accent2: #ff6b35;
+    --accent3: #7c3aed;
+    --accent4: #10b981;
+    --text: #c8d8f0;
+    --text-dim: #5a7a9a;
+    --text-bright: #ffffff;
+    --mono: 'IBM Plex Mono', monospace;
+    --sans: 'Noto Sans TC', sans-serif;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--sans);
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid background */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,212,255,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,212,255,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 40px 24px 80px;
+    position: relative;
+    z-index: 1;
+  }
+
+  /* Header */
+  .header {
+    text-align: center;
+    margin-bottom: 60px;
+    animation: fadeDown 0.6s ease both;
+  }
+
+  .header-tag {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    opacity: 0.8;
+  }
+
+  .header h1 {
+    font-size: clamp(32px, 6vw, 56px);
+    font-weight: 700;
+    color: var(--text-bright);
+    line-height: 1.1;
+    letter-spacing: -1px;
+  }
+
+  .header h1 span {
+    color: var(--accent);
+    font-family: var(--mono);
+  }
+
+  .header-sub {
+    margin-top: 16px;
+    font-size: 15px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  /* Level nav */
+  .level-nav {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 48px;
+    flex-wrap: wrap;
+    animation: fadeDown 0.6s 0.1s ease both;
+  }
+
+  .level-btn {
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 8px 20px;
+    border: 1px solid var(--border);
+    background: transparent;
+    color: var(--text-dim);
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s;
+    letter-spacing: 1px;
+  }
+
+  .level-btn:hover, .level-btn.active {
+    border-color: var(--accent);
+    color: var(--accent);
+    background: rgba(0,212,255,0.05);
+  }
+
+  /* Section */
+  .section {
+    margin-bottom: 48px;
+    animation: fadeUp 0.5s ease both;
+  }
+
+  .section-header {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .section-num {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    font-family: var(--mono);
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Cards grid */
+  .cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+    gap: 16px;
+    align-items: start;
+  }
+
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+
+  .card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0;
+    height: 2px;
+    background: var(--card-color, var(--accent));
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s;
+  }
+
+  .card:hover {
+    border-color: var(--card-color, var(--accent));
+    transform: translateY(-2px);
+    box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  }
+
+  .card:hover::before {
+    transform: scaleX(1);
+  }
+
+  .card-head {
+    padding: 18px 20px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .card-icon {
+    font-size: 22px;
+    line-height: 1;
+  }
+
+  .card-title {
+    flex: 1;
+  }
+
+  .card-title h3 {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-bright);
+    margin-bottom: 2px;
+  }
+
+  .card-title p {
+    font-size: 11px;
+    color: var(--text-dim);
+    font-family: var(--mono);
+  }
+
+  .card-toggle {
+    width: 24px;
+    height: 24px;
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: var(--mono);
+    font-size: 14px;
+    color: var(--text-dim);
+    transition: all 0.2s;
+    flex-shrink: 0;
+  }
+
+  .card.open .card-toggle {
+    border-color: var(--card-color, var(--accent));
+    color: var(--card-color, var(--accent));
+    transform: rotate(45deg);
+  }
+
+  .card-body {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.35s ease;
+  }
+
+  .card.open .card-body {
+    max-height: 1000px;
+  }
+
+  .card-content {
+    padding: 0 20px 20px;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* Skills list */
+  .skills-list {
+    list-style: none;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .skill-item {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+  }
+
+  .skill-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--card-color, var(--accent));
+    margin-top: 6px;
+    flex-shrink: 0;
+  }
+
+  .skill-text {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.6;
+  }
+
+  .skill-zh {
+    font-size: 11px;
+    color: var(--text-dim);
+    display: block;
+    margin-top: 2px;
+    font-family: var(--mono);
+  }
+
+  /* Tag badges */
+  .tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 14px;
+  }
+
+  .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 9px;
+    border-radius: 3px;
+    border: 1px solid;
+    letter-spacing: 0.5px;
+  }
+
+  /* Tutorial block */
+  .tutorial {
+    margin-top: 16px;
+    background: rgba(0,0,0,0.3);
+    border-radius: 6px;
+    padding: 14px;
+    border: 1px solid rgba(255,255,255,0.05);
+  }
+
+  .tutorial-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+  }
+
+  .tutorial-step {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 8px;
+    align-items: flex-start;
+  }
+
+  .step-num {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--card-color, var(--accent));
+    font-weight: 700;
+    min-width: 20px;
+    line-height: 1.8;
+  }
+
+  .step-text {
+    font-size: 12px;
+    color: var(--text);
+    line-height: 1.7;
+  }
+
+  code {
+    font-family: var(--mono);
+    font-size: 11px;
+    background: rgba(0,212,255,0.08);
+    color: var(--accent);
+    padding: 1px 5px;
+    border-radius: 3px;
+  }
+
+  /* Progress bar */
+  .progress-wrap {
+    margin-top: 12px;
+  }
+
+  .progress-label {
+    display: flex;
+    justify-content: space-between;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--text-dim);
+    margin-bottom: 5px;
+  }
+
+  .progress-bar {
+    height: 3px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    background: var(--card-color, var(--accent));
+    border-radius: 2px;
+    transition: width 0.6s 0.2s ease;
+    width: 0;
+  }
+
+  .card.open .progress-fill {
+    width: var(--progress, 0%);
+  }
+
+  /* Animations */
+  @keyframes fadeDown {
+    from { opacity: 0; transform: translateY(-20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  /* Level badge */
+  .level-badge {
+    display: inline-block;
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 2px;
+    padding: 2px 8px;
+    border-radius: 2px;
+    text-transform: uppercase;
+    margin-left: 8px;
+    vertical-align: middle;
+  }
+
+  .lvl-junior { background: rgba(16,185,129,0.15); color: #10b981; border: 1px solid rgba(16,185,129,0.3); }
+  .lvl-mid { background: rgba(0,212,255,0.1); color: var(--accent); border: 1px solid rgba(0,212,255,0.3); }
+  .lvl-senior { background: rgba(124,58,237,0.15); color: #a78bfa; border: 1px solid rgba(124,58,237,0.3); }
+  .lvl-architect { background: rgba(255,107,53,0.15); color: var(--accent2); border: 1px solid rgba(255,107,53,0.3); }
+
+  /* Footer summary */
+  .summary-bar {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 12px;
+    margin-top: 60px;
+    padding: 24px;
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+  }
+
+  .sum-item {
+    text-align: center;
+  }
+
+  .sum-num {
+    font-family: var(--mono);
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--text-bright);
+  }
+
+  .sum-label {
+    font-size: 11px;
+    color: var(--text-dim);
+    margin-top: 4px;
+  }
+
+  /* hidden sections */
+  .section[data-level] { display: none; }
+  .section[data-level].visible { display: block; }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="header-tag">// LEARNING ROADMAP</div>
+    <h1>後端架構師<br><span>Backend Architect</span></h1>
+    <div class="header-sub">$ skills --level=all --mode=fullstack-arch</div>
+  </div>
+
+  <div class="level-nav">
+    <button class="level-btn active" onclick="filterLevel('all')">全部 ALL</button>
+    <button class="level-btn" onclick="filterLevel('foundation')">🟢 基礎層</button>
+    <button class="level-btn" onclick="filterLevel('core')">🔵 核心層</button>
+    <button class="level-btn" onclick="filterLevel('advanced')">🟣 進階層</button>
+    <button class="level-btn" onclick="filterLevel('architect')">🟠 架構層</button>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 1: 程式語言 & Runtime
+  ══════════════════════════════════════════════ -->
+  <div class="section visible" data-level="foundation" style="animation-delay:0.05s">
+    <div class="section-header">
+      <span class="section-num">01</span>
+      <span class="section-title" style="color:#10b981">程式語言 & Runtime</span>
+      <div class="section-line"></div>
+      <span class="level-badge lvl-junior">基礎層</span>
+    </div>
+    <div class="cards">
+
+      <div class="card" style="--card-color:#10b981" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">☕</span>
+          <div class="card-title">
+            <h3>Java / Kotlin</h3>
+            <p>enterprise backend standard</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">OOP 四大原則：封裝、繼承、多型、抽象<span class="skill-zh">物件導向設計基礎，面試必考</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Java 8+ 新特性：Stream、Lambda、Optional<span class="skill-zh">現代 Java 開發不可缺少</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">JVM 記憶體模型、GC 機制<span class="skill-zh">堆(Heap)、棧(Stack)、方法區；GC 調校</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">多執行緒：Thread、ExecutorService、CompletableFuture<span class="skill-zh">並發處理是架構師核心能力</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">泛型、反射(Reflection)、注解(Annotation)<span class="skill-zh">框架底層原理依賴這些</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">從手邊的 Spring Boot 專案出發，遇到不懂的語法立刻深挖原理</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">刷 LeetCode 用 Java 寫 → 同時練語法與演算法思維</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">讀《Effective Java》— 每章都是架構師必備觀念</span></div>
+              <div class="tutorial-step"><span class="step-num">04.</span><span class="step-text">JVM 調校：用 <code>jstat</code> <code>jmap</code> <code>VisualVM</code> 實際觀察 GC 行為</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">Java 17+</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">Kotlin</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">JVM</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">Concurrency</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#10b981" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🐍</span>
+          <div class="card-title">
+            <h3>Python / Go</h3>
+            <p>scripting & high-perf services</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Python：FastAPI、資料處理、自動化腳本<span class="skill-zh">AI / ML 整合場景的主力語言</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Go：goroutine、channel、超高並發 HTTP 服務<span class="skill-zh">雲端原生工具大量使用 Go</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">各語言適用場景判斷：Java 企業級 / Python AI / Go 微服務<span class="skill-zh">架構師要懂選語言</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">Python：從 FastAPI 基礎開始，加入 async/await、BackgroundTask 實作非同步處理</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">Go：官方 Tour of Go 一週看完 → 動手寫一個簡單 HTTP proxy 練手</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">FastAPI</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">Go</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">Async</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 2: 框架 & Web 基礎
+  ══════════════════════════════════════════════ -->
+  <div class="section visible" data-level="foundation" style="animation-delay:0.1s">
+    <div class="section-header">
+      <span class="section-num">02</span>
+      <span class="section-title" style="color:#10b981">框架 & Web 基礎</span>
+      <div class="section-line"></div>
+      <span class="level-badge lvl-junior">基礎層</span>
+    </div>
+    <div class="cards">
+
+      <div class="card" style="--card-color:#10b981" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🍃</span>
+          <div class="card-title">
+            <h3>Spring Boot 深度</h3>
+            <p>enterprise framework core</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">IOC / DI 原理：Bean 生命週期、作用域、循環依賴<span class="skill-zh">@Lazy 可解循環依賴問題</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">AOP：切面程式設計，實作日誌、交易、安全攔截<span class="skill-zh">@Transactional 底層就是 AOP</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Spring MVC 完整流程：DispatcherServlet → Filter → Handler<span class="skill-zh">HTTP 請求如何在 Spring 中流動</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Spring Security：OAuth2、JWT、權限控制<span class="skill-zh">企業系統必備</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Spring Data JPA + 自訂 Query、N+1 問題解法<span class="skill-zh">效能坑，架構師要知道</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Spring Batch、Spring Scheduler 批次處理<span class="skill-zh">大量資料處理場景</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">讀 Spring 原始碼：從 <code>AnnotationConfigApplicationContext</code> 追 Bean 創建過程</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">自己實作一個簡單 IOC 容器（500 行內）→ 真正理解依賴注入的本質</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">用手邊的 Spring Boot 專案當練習場，對照框架行為理解每個機制</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">IOC/DI</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">AOP</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">Security</span>
+              <span class="tag" style="color:#10b981;border-color:rgba(16,185,129,0.3)">JPA</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#10b981" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🌐</span>
+          <div class="card-title">
+            <h3>HTTP & RESTful API</h3>
+            <p>網路通訊基礎</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">HTTP/1.1、HTTP/2、HTTPS、TLS 握手流程<span class="skill-zh">CORS 問題根源在這裡</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">RESTful 設計：URI 命名、狀態碼、冪等性<span class="skill-zh">GET/POST/PUT/PATCH/DELETE 正確用法</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">gRPC / GraphQL / WebSocket<span class="skill-zh">REST 以外的通訊方式</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">API 版本控制、API Gateway 設計<span class="skill-zh">企業 API 管理策略</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">用 Wireshark 抓封包，親眼看 TLS 握手過程</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">為 eyver 或 Stock AI 補齊 OpenAPI (Swagger) 文件</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">嘗試用 <code>spring-grpc</code> 改寫一個服務，比較優缺點</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 3: 資料庫
+  ══════════════════════════════════════════════ -->
+  <div class="section visible" data-level="core" style="animation-delay:0.15s">
+    <div class="section-header">
+      <span class="section-num">03</span>
+      <span class="section-title" style="color:#00d4ff">資料庫設計 & 調校</span>
+      <div class="section-line"></div>
+      <span class="level-badge lvl-mid">核心層</span>
+    </div>
+    <div class="cards">
+
+      <div class="card" style="--card-color:#00d4ff" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🐘</span>
+          <div class="card-title">
+            <h3>關聯式資料庫 SQL</h3>
+            <p>PostgreSQL / MySQL / Oracle</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">索引原理：B+Tree、複合索引、覆蓋索引、索引失效<span class="skill-zh">SQL 效能調優第一課</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">交易 ACID & 隔離等級：Read Uncommitted → Serializable<span class="skill-zh">髒讀、幻讀、不可重複讀 解決方案</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">EXPLAIN / EXPLAIN ANALYZE 分析執行計劃<span class="skill-zh">找出慢查詢的工具</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Schema 設計：正規化 1NF~3NF、反正規化<span class="skill-zh">效能 vs 一致性的取捨</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">分區(Partition)、分表、讀寫分離<span class="skill-zh">TimescaleDB 超級表就是分區概念的實際應用</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">連接池：HikariCP 配置調校<span class="skill-zh">Spring Boot 預設連接池</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">對手邊的 PostgreSQL 下複雜查詢，用 <code>EXPLAIN ANALYZE</code> 觀察執行計劃</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">刻意製造慢查詢（大量資料 + 無索引）→ 加索引後觀察效能差異</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">讀《高效能 MySQL》或 PostgreSQL 官方調校文件</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#00d4ff;border-color:rgba(0,212,255,0.3)">PostgreSQL</span>
+              <span class="tag" style="color:#00d4ff;border-color:rgba(0,212,255,0.3)">Index</span>
+              <span class="tag" style="color:#00d4ff;border-color:rgba(0,212,255,0.3)">ACID</span>
+              <span class="tag" style="color:#00d4ff;border-color:rgba(0,212,255,0.3)">TimescaleDB</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#00d4ff" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">⚡</span>
+          <div class="card-title">
+            <h3>Redis 快取</h3>
+            <p>效能加速必備</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">資料結構：String、Hash、List、Set、ZSet、Stream<span class="skill-zh">各結構適用場景</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">快取策略：Cache-Aside、Write-Through、Write-Behind<span class="skill-zh">快取擊穿、穿透、雪崩防護</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">分散式鎖：<code>SET key value NX PX</code> 原理<span class="skill-zh">防止並發重複操作</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Redis Cluster 分片、主從複製、哨兵(Sentinel)<span class="skill-zh">高可用架構</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">持久化：RDB vs AOF 選擇<span class="skill-zh">資料安全性考量</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">用 ZSet 實作排行榜功能（例如：商品熱度、使用者積分排名）</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">實作快取擊穿防護：加互斥鎖重建快取</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">用 Redis Stream 取代 DB 做訊息隊列輕量版</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#00d4ff;border-color:rgba(0,212,255,0.3)">Redis</span>
+              <span class="tag" style="color:#00d4ff;border-color:rgba(0,212,255,0.3)">Cache</span>
+              <span class="tag" style="color:#00d4ff;border-color:rgba(0,212,255,0.3)">Distributed Lock</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#00d4ff" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🔍</span>
+          <div class="card-title">
+            <h3>NoSQL & 搜尋引擎</h3>
+            <p>OpenSearch / MongoDB / Elasticsearch</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">OpenSearch/ES：Index 設計、Mapping、Analyzer<span class="skill-zh">企業級日誌平台與全文搜尋核心</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Query DSL：bool、range、aggregation、bucket<span class="skill-zh">掌握查詢語言才能發揮搜尋引擎全部能力</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">MongoDB：文件模型、聚合管道<span class="skill-zh">彈性 Schema 場景</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">各 DB 選型原則：SQL vs NoSQL vs 搜尋引擎<span class="skill-zh">架構師最重要的判斷力之一</span></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 4: 系統設計 & 架構模式
+  ══════════════════════════════════════════════ -->
+  <div class="section visible" data-level="advanced" style="animation-delay:0.2s">
+    <div class="section-header">
+      <span class="section-num">04</span>
+      <span class="section-title" style="color:#a78bfa">系統設計 & 架構模式</span>
+      <div class="section-line"></div>
+      <span class="level-badge lvl-senior">進階層</span>
+    </div>
+    <div class="cards">
+
+      <div class="card" style="--card-color:#7c3aed" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🏗️</span>
+          <div class="card-title">
+            <h3>設計模式 Design Patterns</h3>
+            <p>23 種 GoF 模式</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">創建型：Singleton、Factory、Builder、Prototype<span class="skill-zh">Spring Bean 就是 Singleton</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">結構型：Proxy、Decorator、Adapter、Facade<span class="skill-zh">AOP 底層是動態 Proxy</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">行為型：Strategy、Observer、Template Method、Chain of Responsibility<span class="skill-zh">Spring Security Filter Chain 就是責任鏈</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">SOLID 原則：每個字母代表什麼、違反時的後果<span class="skill-zh">架構師設計系統的核心準則</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">每讀一個 Pattern → 立刻在手邊專案找對應的真實案例加深印象</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">挑選一個既有模組，刻意用 Strategy Pattern 重構，感受差異</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">推薦：refactoring.guru 網站，圖解清晰、有 Java 範例</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">GoF 23</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">SOLID</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Refactoring</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#7c3aed" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🔬</span>
+          <div class="card-title">
+            <h3>微服務架構</h3>
+            <p>Microservices Design</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">服務拆分原則：DDD 領域驅動設計、Bounded Context<span class="skill-zh">如何決定服務邊界</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">服務通訊：同步 REST/gRPC vs 非同步 MQ<span class="skill-zh">耦合度 vs 即時性的取捨</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">服務發現：Eureka、Consul、Kubernetes Service<span class="skill-zh">服務怎麼找到彼此</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">API Gateway：路由、認證、限流、熔斷<span class="skill-zh">Spring Cloud Gateway</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">分散式交易：Saga Pattern、2PC、最終一致性<span class="skill-zh">微服務最難的問題</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">熔斷器 Circuit Breaker：Resilience4j<span class="skill-zh">防止一個服務拖垮全部</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">分析手邊系統的架構屬於哪種模式（單體？模組化單體？微服務？）</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">把一個單體服務拆成 2 個獨立服務，練習跨服務通訊與資料一致性</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">推薦：《Building Microservices》by Sam Newman</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#7c3aed" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">📨</span>
+          <div class="card-title">
+            <h3>訊息佇列 MQ</h3>
+            <p>Kafka / RabbitMQ</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Kafka：Topic、Partition、Consumer Group、Offset<span class="skill-zh">高吞吐量事件流平台</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">消息可靠性：At-least-once、Exactly-once、冪等消費<span class="skill-zh">防止重複處理</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">死信佇列 DLQ、延遲消息、消息回溯<span class="skill-zh">異常處理策略</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">CQRS + Event Sourcing 架構模式<span class="skill-zh">搭配 Kafka 的高階架構</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">設計一個事件驅動場景：資料更新 → 發 Kafka 事件 → 觸發下游服務處理</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">用 Docker Compose 啟動 Kafka + Kafka UI，觀察 Partition 分配與 Consumer lag</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Kafka</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Event-Driven</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">CQRS</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 5: 雲端 & DevOps
+  ══════════════════════════════════════════════ -->
+  <div class="section visible" data-level="advanced" style="animation-delay:0.25s">
+    <div class="section-header">
+      <span class="section-num">05</span>
+      <span class="section-title" style="color:#a78bfa">雲端 & DevOps</span>
+      <div class="section-line"></div>
+      <span class="level-badge lvl-senior">進階層</span>
+    </div>
+    <div class="cards">
+
+      <div class="card" style="--card-color:#7c3aed" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">☸️</span>
+          <div class="card-title">
+            <h3>容器 & Kubernetes</h3>
+            <p>Docker → K8s 完整路徑</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Docker：多階段建置、映像優化、網路模式<span class="skill-zh">layer cache 最佳化可大幅縮短 CI build 時間</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Docker Compose：服務依賴、健康檢查、Volume 管理<span class="skill-zh">本機開發環境與多服務整合測試利器</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">K8s 核心：Pod、Deployment、Service、Ingress、ConfigMap<span class="skill-zh">現代企業部署標準</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">K8s 進階：HPA 自動擴縮、PVC 存儲、RBAC 權限<span class="skill-zh">生產環境必備</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Helm Chart：K8s 應用打包與版本管理<span class="skill-zh">取代手寫 YAML</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">本機裝 <code>minikube</code> 或 <code>kind</code> → 把自己的 Spring Boot 應用部署上去</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">閱讀公司或開源專案的 K8s YAML，理解每個欄位的作用</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">為自己的專案寫一份 Helm Chart，支援 dev / prod 環境切換</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Docker</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Kubernetes</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Helm</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#7c3aed" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🔄</span>
+          <div class="card-title">
+            <h3>CI/CD Pipeline</h3>
+            <p>持續整合 / 持續交付</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">GitLab CI / GitHub Actions：Pipeline 撰寫<span class="skill-zh">主流 CI/CD 工具，語法相近概念相通</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">流程：Build → Unit Test → Integration Test → Docker Build → Deploy<span class="skill-zh">完整 CI/CD 標準流程</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">藍綠部署、Canary 發布、滾動更新<span class="skill-zh">零停機部署策略</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Harbor 私有 Registry：映像版本管理與存取控制<span class="skill-zh">企業內網 Docker Registry 標準解法</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">為自己的 GitHub Repo 建立 GitHub Actions：push → build → 自動測試</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">研究公司或開源專案的 CI/CD 設定，理解每個 stage 的目的</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 6: 可觀測性
+  ══════════════════════════════════════════════ -->
+  <div class="section visible" data-level="advanced" style="animation-delay:0.3s">
+    <div class="section-header">
+      <span class="section-num">06</span>
+      <span class="section-title" style="color:#a78bfa">可觀測性 Observability</span>
+      <div class="section-line"></div>
+      <span class="level-badge lvl-senior">進階層</span>
+    </div>
+    <div class="cards">
+
+      <div class="card" style="--card-color:#7c3aed" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">📊</span>
+          <div class="card-title">
+            <h3>Metrics / Logs / Traces</h3>
+            <p>Prometheus + Tempo + OpenSearch</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">三大支柱：Metrics（指標）、Logs（日誌）、Traces（鏈路追蹤）<span class="skill-zh">現代可觀測性系統的基本架構</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Prometheus：PromQL 查詢語言、Alert 規則設定<span class="skill-zh">雲端原生監控標準</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Grafana：Dashboard 設計、資料來源整合<span class="skill-zh">可視化核心工具</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Grafana Tempo + TraceQL：分散式鏈路追蹤<span class="skill-zh">跨服務請求追蹤，找出效能瓶頸</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">OpenTelemetry：統一可觀測性標準框架<span class="skill-zh">未來趨勢，廠商中立</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">SLI / SLO / SLA 定義：服務等級指標<span class="skill-zh">架構師要能定義系統品質目標</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">在 Spring Boot 專案加入 <code>micrometer</code> + Prometheus → 觀察 JVM 與業務指標</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">加入 OpenTelemetry Tracing → 串接多個服務，觀察跨服務請求鏈路</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">在 Grafana 建立自己的 Dashboard，理解每個 Panel 背後的 PromQL</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Prometheus</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Grafana</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">Tempo</span>
+              <span class="tag" style="color:#a78bfa;border-color:rgba(124,58,237,0.3)">OTel</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- ══════════════════════════════════════════════
+       SECTION 7: 架構師核心能力
+  ══════════════════════════════════════════════ -->
+  <div class="section visible" data-level="architect" style="animation-delay:0.35s">
+    <div class="section-header">
+      <span class="section-num">07</span>
+      <span class="section-title" style="color:#ff6b35">架構師核心能力</span>
+      <div class="section-line"></div>
+      <span class="level-badge lvl-architect">架構層</span>
+    </div>
+    <div class="cards">
+
+      <div class="card" style="--card-color:#ff6b35" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">⚖️</span>
+          <div class="card-title">
+            <h3>系統設計面試 & 架構決策</h3>
+            <p>High-Level Design</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">CAP 定理：一致性 vs 可用性 vs 分區容錯<span class="skill-zh">所有分散式系統設計的基礎</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">估算 Capacity：QPS、儲存量、頻寬計算<span class="skill-zh">設計前先估規模</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">高可用設計：冗餘、Load Balancer、Failover<span class="skill-zh">99.9% vs 99.99% 差在哪</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">常見系統設計：URL Shortener、Twitter Feed、搜尋引擎、支付系統<span class="skill-zh">面試必練 20 題</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">架構取捨文件：ADR (Architecture Decision Record)<span class="skill-zh">記錄「為什麼這樣設計」</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">推薦：《Designing Data-Intensive Applications》— 架構師聖經</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">每週設計一個系統（先不看答案），然後對照 ByteByteGo 的解法</span></div>
+              <div class="tutorial-step"><span class="step-num">03.</span><span class="step-text">為手邊的系統寫一份 ADR，練習用文字記錄架構決策的理由</span></div>
+            </div>
+            <div class="tags">
+              <span class="tag" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">CAP</span>
+              <span class="tag" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">High Availability</span>
+              <span class="tag" style="color:#ff6b35;border-color:rgba(255,107,53,0.3)">ADR</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#ff6b35" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">🔐</span>
+          <div class="card-title">
+            <h3>資安設計</h3>
+            <p>Security by Design</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">OWASP Top 10：SQL Injection、XSS、CSRF、IDOR<span class="skill-zh">常見漏洞防護</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">認證 vs 授權：JWT、OAuth2、OIDC、RBAC / ABAC<span class="skill-zh">Spring Security 實作企業權限控制的標準做法</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">加密：對稱(AES) vs 非對稱(RSA)、雜湊(bcrypt/SHA)<span class="skill-zh">密碼儲存與傳輸安全</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">Zero Trust 架構原則<span class="skill-zh">企業資安現代化趨勢</span></div></li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="card" style="--card-color:#ff6b35" onclick="toggleCard(this)">
+        <div class="card-head">
+          <span class="card-icon">📈</span>
+          <div class="card-title">
+            <h3>效能調優 & 壓力測試</h3>
+            <p>Performance Engineering</p>
+          </div>
+          <div class="card-toggle">+</div>
+        </div>
+        <div class="card-body">
+          <div class="card-content">
+            <ul class="skills-list">
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">壓測工具：JMeter、k6、Gatling<span class="skill-zh">驗證系統承受多少 QPS</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">JVM 效能分析：Async Profiler、Flame Graph<span class="skill-zh">找出 CPU/Memory 熱點</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">SQL 慢查詢分析：pg_stat_statements、slow query log<span class="skill-zh">DB 往往是瓶頸</span></div></li>
+              <li class="skill-item"><span class="skill-dot"></span><div class="skill-text">限流：Token Bucket、Leaky Bucket 算法<span class="skill-zh">保護系統不被打垮</span></div></li>
+            </ul>
+            <div class="tutorial">
+              <div class="tutorial-title">// 學習路徑</div>
+              <div class="tutorial-step"><span class="step-num">01.</span><span class="step-text">用 k6 對自己的 API 壓測，觀察 Prometheus 指標在高負載下的變化</span></div>
+              <div class="tutorial-step"><span class="step-num">02.</span><span class="step-text">用 Async Profiler 產生 Flame Graph，找出 CPU / Memory 的熱點方法</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- Summary bar -->
+  <div class="summary-bar">
+    <div class="sum-item">
+      <div class="sum-num" style="color:#10b981">2</div>
+      <div class="sum-label">🟢 基礎層技能</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-num" style="color:#00d4ff">3</div>
+      <div class="sum-label">🔵 核心層技能</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-num" style="color:#a78bfa">5</div>
+      <div class="sum-label">🟣 進階層技能</div>
+    </div>
+    <div class="sum-item">
+      <div class="sum-num" style="color:#ff6b35">3</div>
+      <div class="sum-label">🟠 架構層技能</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  function toggleCard(card) {
+    card.classList.toggle('open');
+  }
+
+  function filterLevel(level) {
+    document.querySelectorAll('.level-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+
+    const sections = document.querySelectorAll('.section[data-level]');
+    sections.forEach(s => {
+      if (level === 'all' || s.dataset.level === level) {
+        s.classList.add('visible');
+        s.style.display = '';
+      } else {
+        s.classList.remove('visible');
+        s.style.display = 'none';
+      }
+    });
+  }
+
+  // Stagger animations on load
+  document.querySelectorAll('.section').forEach((s, i) => {
+    s.style.animationDelay = (i * 0.06) + 's';
+  });
+</script>
+</body>
+</html>

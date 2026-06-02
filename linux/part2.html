@@ -1,0 +1,1636 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux 環境建置完整教學</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg: #0a0e13;
+  --surface: #111720;
+  --surface2: #1a2233;
+  --surface3: #202c40;
+  --border: #243044;
+  --border2: #2e3d55;
+  --green: #4ade80;
+  --green-dim: #14281e;
+  --blue: #60a5fa;
+  --blue-dim: #102040;
+  --yellow: #fbbf24;
+  --yellow-dim: #2a1e08;
+  --red: #f87171;
+  --red-dim: #2a1010;
+  --purple: #c084fc;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+  --text: #cbd5e1;
+  --text-dim: #64748b;
+  --text-muted: #475569;
+  --text-bright: #f1f5f9;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--text); font-family: 'Noto Sans TC', sans-serif; font-size: 14px; line-height: 1.75; }
+.layout { display: flex; min-height: 100vh; }
+.sidebar { width: 280px; background: var(--surface); border-right: 1px solid var(--border); position: fixed; top: 0; left: 0; bottom: 0; overflow-y: auto; z-index: 200; }
+.sidebar-logo { padding: 22px 20px 18px; border-bottom: 1px solid var(--border); }
+.sidebar-logo .title { font-family: 'JetBrains Mono', monospace; font-size: 11px; letter-spacing: 2px; color: var(--orange); text-transform: uppercase; }
+.sidebar-logo .subtitle { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
+.nav-group { margin: 6px 0; }
+.nav-group-label { padding: 10px 20px 4px; font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--text-muted); font-weight: 700; }
+.nav-link { display: flex; align-items: center; gap: 10px; padding: 9px 20px; cursor: pointer; color: var(--text-dim); font-size: 13px; transition: all 0.15s; border-left: 3px solid transparent; }
+.nav-link:hover { background: var(--surface2); color: var(--text); }
+.nav-link.active { background: linear-gradient(90deg, rgba(251,146,60,0.1), transparent); border-left-color: var(--orange); color: var(--orange); font-weight: 500; }
+.nav-link .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.nav-link .nav-badge { margin-left: auto; font-family: 'JetBrains Mono', monospace; font-size: 10px; background: var(--surface3); color: var(--text-dim); padding: 1px 6px; border-radius: 10px; }
+.main { margin-left: 280px; flex: 1; min-height: 100vh; }
+.section { display: none; animation: fadeSlide 0.25s ease; }
+.section.active { display: block; }
+@keyframes fadeSlide { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+.section-hero { padding: 40px 48px 32px; background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%); border-bottom: 1px solid var(--border); position: relative; overflow: hidden; }
+.section-hero::before { content: attr(data-icon); position: absolute; right: 48px; top: 50%; transform: translateY(-50%); font-size: 80px; opacity: 0.06; pointer-events: none; }
+.section-hero h1 { font-size: 26px; font-weight: 700; color: var(--text-bright); margin-bottom: 8px; }
+.section-hero .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+.tag { font-family: 'JetBrains Mono', monospace; font-size: 11px; padding: 3px 10px; border-radius: 20px; }
+.tag-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.tag-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+.tag-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.tag-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+.tag-orange { background: #2a1200; color: var(--orange); border: 1px solid rgba(251,146,60,0.2); }
+.section-hero .desc { color: var(--text-dim); font-size: 14px; max-width: 640px; }
+.section-body { padding: 32px 48px; }
+.card { background: var(--surface); border: 1px solid var(--border); border-radius: 10px; margin-bottom: 24px; overflow: hidden; }
+.card-header { padding: 14px 20px; background: var(--surface2); border-bottom: 1px solid var(--border); display: flex; align-items: center; gap: 10px; }
+.card-header h2 { font-size: 15px; font-weight: 700; color: var(--text-bright); flex: 1; }
+.card-header .header-tag { font-family: 'JetBrains Mono', monospace; font-size: 10px; padding: 2px 8px; border-radius: 4px; }
+.card-body { padding: 20px; }
+.terminal { background: #060a0f; border: 1px solid var(--border); border-radius: 8px; margin: 14px 0; overflow: hidden; }
+.terminal-titlebar { background: var(--surface2); padding: 8px 14px; display: flex; align-items: center; gap: 8px; border-bottom: 1px solid var(--border); }
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot-r { background: #ef4444; } .dot-y { background: #f59e0b; } .dot-g { background: #22c55e; }
+.terminal-titlebar .tbar-name { font-family: 'JetBrains Mono', monospace; font-size: 11px; color: var(--text-dim); margin-left: 6px; }
+.terminal-body { padding: 16px 18px; font-family: 'JetBrains Mono', monospace; font-size: 12.5px; line-height: 2; white-space: pre; overflow-x: auto; }
+.s-prompt { color: var(--green); } .s-cmd { color: var(--text-bright); font-weight: 700; } .s-flag { color: var(--blue); }
+.s-arg { color: var(--yellow); } .s-str { color: var(--orange); } .s-comment { color: var(--text-muted); font-style: italic; }
+.s-out { color: #4a5568; } .s-out-hi { color: var(--cyan); } .s-path { color: var(--purple); }
+.s-key { color: var(--green); } .s-err { color: var(--red); }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.data-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.data-table th { text-align: left; padding: 9px 14px; background: var(--surface2); color: var(--text-dim); font-size: 11px; letter-spacing: 0.8px; font-weight: 600; border-bottom: 1px solid var(--border); }
+.data-table td { padding: 10px 14px; border-bottom: 1px solid var(--border); vertical-align: top; }
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.015); }
+.callout { border-radius: 7px; padding: 13px 16px; margin: 14px 0; display: flex; gap: 12px; font-size: 13px; line-height: 1.6; }
+.callout-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.callout-body { flex: 1; }
+.callout-body strong { display: block; margin-bottom: 3px; }
+.callout.tip { background: #0a1f12; border: 1px solid rgba(74,222,128,0.25); }
+.callout.info { background: #0a1525; border: 1px solid rgba(96,165,250,0.25); }
+.callout.warn { background: #1a1505; border: 1px solid rgba(251,191,36,0.25); }
+.callout.danger { background: #1a0a0a; border: 1px solid rgba(248,113,113,0.25); }
+.steps { margin: 14px 0; }
+.step { display: flex; gap: 16px; margin-bottom: 20px; position: relative; }
+.step:not(:last-child)::after { content: ''; position: absolute; left: 13px; top: 30px; bottom: -4px; width: 2px; background: var(--border); }
+.step-num { width: 28px; height: 28px; border-radius: 50%; background: rgba(251,146,60,0.1); border: 2px solid var(--orange); color: var(--orange); font-family: 'JetBrains Mono', monospace; font-size: 11px; font-weight: 700; display: flex; align-items: center; justify-content: center; flex-shrink: 0; position: relative; z-index: 1; }
+.step-content { flex: 1; padding-top: 2px; }
+.step-title { font-weight: 700; color: var(--text-bright); margin-bottom: 6px; font-size: 14px; }
+.step-desc { color: var(--text-dim); font-size: 13px; margin-bottom: 8px; }
+.diagram { background: #060a0f; border: 1px solid var(--border); border-radius: 8px; padding: 20px 24px; font-family: 'JetBrains Mono', monospace; font-size: 11.5px; line-height: 1.9; margin: 14px 0; overflow-x: auto; white-space: pre-wrap; word-break: break-word; }
+code { font-family: 'JetBrains Mono', monospace; font-size: 12px; background: rgba(96,165,250,0.1); color: var(--cyan); padding: 1px 6px; border-radius: 4px; border: 1px solid rgba(96,165,250,0.15); }
+p { margin-bottom: 10px; } ul { padding-left: 20px; margin-bottom: 10px; } li { margin-bottom: 5px; }
+strong { color: var(--text-bright); } h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 0 8px; }
+.phase-badge { display: inline-flex; align-items: center; gap: 6px; background: var(--surface2); border: 1px solid var(--border); border-radius: 20px; padding: 4px 12px; font-size: 12px; color: var(--text-dim); margin-bottom: 16px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="title">📗 Part 2</div>
+    <div class="subtitle">環境建置完整教學</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">第一步：虛擬機</div>
+    <div class="nav-link active" onclick="show('mac')">
+      <span class="nav-icon">🍎</span> Mac 選哪個？
+    </div>
+    <div class="nav-link" onclick="show('orbstack')">
+      <span class="nav-icon">⚡</span> OrbStack（最推薦）
+    </div>
+    <div class="nav-link" onclick="show('vmfusion')">
+      <span class="nav-icon">🖥️</span> VMware Fusion
+    </div>
+    <div class="nav-link" onclick="show('vmware')">
+      <span class="nav-icon">🪟</span> VMware（Windows 版）
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">第二步：Ubuntu</div>
+    <div class="nav-link" onclick="show('ubuntu')">
+      <span class="nav-icon">🐧</span> Ubuntu Server 安裝
+    </div>
+    <div class="nav-link" onclick="show('basic')">
+      <span class="nav-icon">🔧</span> 初始系統設定
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">第三步：Java</div>
+    <div class="nav-link" onclick="show('jdk')">
+      <span class="nav-icon">☕</span> JDK 安裝設定
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">第四步：Web Server</div>
+    <div class="nav-link" onclick="show('nginx')">
+      <span class="nav-icon">🌐</span> Nginx 安裝設定
+    </div>
+    <div class="nav-link" onclick="show('ssl')">
+      <span class="nav-icon">🔒</span> SSL 憑證掛載
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">第五步：AP Server</div>
+    <div class="nav-link" onclick="show('tomcat')">
+      <span class="nav-icon">🐱</span> Tomcat 完整安裝
+    </div>
+    <div class="nav-link" onclick="show('war')">
+      <span class="nav-icon">📦</span> WAR 部署流程
+    </div>
+    <div class="nav-link" onclick="show('service')">
+      <span class="nav-icon">⚡</span> 設定系統服務
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">進階架構</div>
+    <div class="nav-link" onclick="show('arch')">
+      <span class="nav-icon">🏗️</span> Web vs AP 架構圖
+    </div>
+    <div class="nav-link" onclick="show('lb')">
+      <span class="nav-icon">⚖️</span> Load Balance 設定
+    </div>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+
+<!-- ===== MAC OVERVIEW ===== -->
+<div class="section active" id="mac">
+  <div class="section-hero" data-icon="🍎">
+    <h1>Mac 上的 Linux 虛擬環境選擇</h1>
+    <div class="tags">
+      <span class="tag tag-orange">Mac 專屬</span>
+    </div>
+    <div class="desc">Mac 與 Windows 不同，有多種方式可以跑 Linux 環境。根據你的 Mac 晶片（Intel / Apple Silicon M1~M4）選擇最適合的工具。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>先確認你的 Mac 是哪種晶片</h2><span class="header-tag tag-blue">確認晶片</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">Terminal</span></div>
+          <div class="terminal-body"><span class="s-comment"># 查看晶片類型</span>
+<span class="s-prompt">$</span> <span class="s-cmd">uname</span> <span class="s-flag">-m</span>
+<span class="s-out">arm64    ← Apple Silicon（M1 / M2 / M3 / M4）</span>
+<span class="s-out">x86_64   ← Intel Mac</span>
+
+<span class="s-comment"># 或從左上角蘋果 → 關於這台 Mac 查看</span></div>
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body"><strong>Apple Silicon（arm64）注意</strong>：M 系列晶片的 CPU 架構是 ARM，和伺服器常用的 x86_64 不同，部分工具有限制，選工具前要先確認。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>三種方案比較</h2><span class="header-tag tag-green">選擇指南</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th></th><th>⚡ OrbStack</th><th>🖥️ VMware Fusion</th><th>🐳 Docker Desktop</th></tr>
+          <tr><td><strong>費用</strong></td><td>個人免費</td><td>個人免費</td><td>個人免費</td></tr>
+          <tr><td><strong>M1~M4</strong></td><td>✅ 完整支援</td><td>✅ 完整支援</td><td>✅ 支援</td></tr>
+          <tr><td><strong>Intel Mac</strong></td><td>✅</td><td>✅</td><td>✅</td></tr>
+          <tr><td><strong>效能</strong></td><td>🚀 極快</td><td>⚡ 快</td><td>⚡ 快</td></tr>
+          <tr><td><strong>RAM 占用</strong></td><td>最少</td><td>中等</td><td>中等</td></tr>
+          <tr><td><strong>GUI 介面</strong></td><td>簡單</td><td>完整</td><td>完整</td></tr>
+          <tr><td><strong>完整 Linux VM</strong></td><td>✅（類 VM）</td><td>✅（完整 VM）</td><td>❌（容器）</td></tr>
+          <tr><td><strong>適合場景</strong></td><td>日常開發練習</td><td>需要完整 VM 環境</td><td>容器化部署</td></tr>
+          <tr><td><strong>推薦度</strong></td><td>⭐⭐⭐⭐⭐</td><td>⭐⭐⭐⭐</td><td>⭐⭐⭐</td></tr>
+        </table>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body">
+            <strong>我的建議：</strong><br>
+            • 學習 Linux 指令 + 架設 Tomcat/Nginx → 用 <strong>OrbStack</strong>（輕量快速，最推薦）<br>
+            • 需要模擬完整的 VM 快照、多台機器 → 用 <strong>VMware Fusion</strong><br>
+            • 已經熟悉 Docker → 用 <strong>Docker Desktop</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== ORBSTACK ===== -->
+<div class="section" id="orbstack">
+  <div class="section-hero" data-icon="⚡">
+    <h1>OrbStack — Mac 最推薦</h1>
+    <div class="tags">
+      <span class="tag tag-orange">Mac 專屬</span>
+      <span class="tag tag-green">M1~M4 完整支援</span>
+      <span class="tag tag-blue">個人免費</span>
+    </div>
+    <div class="desc">OrbStack 是專為 Mac 設計的輕量虛擬環境，比 VMware 更省資源、啟動更快，支援 Apple Silicon，個人使用免費。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>OrbStack 是什麼？</h2><span class="header-tag tag-blue">概念</span></div>
+      <div class="card-body">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+          <div style="color:var(--text-dim);margin-bottom:14px;">OrbStack 架構（比 VMware 輕量）：</div>
+          <div style="border:2px solid #334155;border-radius:8px;padding:12px;position:relative;">
+            <div style="position:absolute;top:-10px;left:16px;background:#060a0f;padding:0 6px;color:var(--text-dim);font-size:11px;">macOS</div>
+            <div style="border:2px solid #1e3a5f;border-radius:6px;padding:12px;margin-top:4px;">
+              <div style="color:var(--blue);font-size:11px;margin-bottom:10px;">OrbStack</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px;">
+                <div style="border:1px solid #2a4a6a;border-radius:5px;padding:8px 16px;color:var(--cyan);text-align:center;font-size:11px;">Ubuntu VM<br>(Linux)</div>
+                <div style="border:1px solid #2a4a6a;border-radius:5px;padding:8px 16px;color:var(--cyan);text-align:center;font-size:11px;">Ubuntu VM<br>(Linux)</div>
+              </div>
+              <div style="color:var(--text-dim);font-size:11px;line-height:1.8;">✅ 共用 Mac 的檔案系統<br>✅ 網路自動設定<br>✅ SSH 自動設定好</div>
+            </div>
+          </div>
+          <div style="margin-top:12px;display:flex;gap:16px;flex-wrap:wrap;">
+            <span style="color:var(--green);">⚡ 啟動時間：約 2 秒</span>
+            <span style="color:var(--green);">💾 RAM 占用：約 200MB</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>安裝 OrbStack</h2><span class="header-tag tag-orange">安裝</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">下載安裝</div>
+              <div class="callout info">
+                <span class="callout-icon">🔗</span>
+                <div class="callout-body"><strong>orbstack.dev</strong> → Download → 下載 .dmg 拖曳安裝<br>或用 Homebrew 安裝（推薦）</div>
+              </div>
+              <div class="terminal"><div class="terminal-body"><span class="s-comment"># 用 Homebrew 安裝（需先裝 Homebrew）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">brew install</span> <span class="s-flag">--cask</span> <span class="s-arg">orbstack</span>
+
+<span class="s-comment"># 還沒有 Homebrew？先裝 Homebrew</span>
+<span class="s-prompt">$</span> /bin/bash <span class="s-flag">-c</span> <span class="s-str">"$(curl -fsSL https://raw.githubusercontent.com/Homebrew/install/HEAD/install.sh)"</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">建立 Linux 虛擬機</div>
+              <div class="step-desc">打開 OrbStack app → 左上角 + → Linux Machine → 選 Ubuntu 22.04</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-comment"># 或直接用指令建立（更快！）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb create</span> <span class="s-arg">ubuntu:22.04</span> <span class="s-arg">my-server</span>
+<span class="s-out">Creating machine 'my-server' with Ubuntu 22.04...</span>
+<span class="s-out">✓ Machine created and started</span>
+
+<span class="s-comment"># 建立完成後直接 SSH 進去</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ssh</span> <span class="s-arg">my-server@orb</span>
+<span class="s-out-hi">ubuntu@my-server:~$</span>
+
+<span class="s-comment"># 或更簡單，直接用 orb 指令進入</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb</span> <span class="s-flag">-m</span> <span class="s-arg">my-server</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">開始使用</div>
+              <div class="step-desc">進入 Linux 後，後面所有安裝步驟（JDK、Nginx、Tomcat）完全一樣！</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>OrbStack 常用指令</h2><span class="header-tag tag-green">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">macOS Terminal</span></div>
+          <div class="terminal-body"><span class="s-comment">## VM 管理</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb list</span>                        <span class="s-comment">列出所有 VM</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb create</span> <span class="s-arg">ubuntu:22.04 web-01</span>  <span class="s-comment">建立新 VM</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb start</span>  <span class="s-arg">web-01</span>               <span class="s-comment">啟動</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb stop</span>   <span class="s-arg">web-01</span>               <span class="s-comment">停止</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb delete</span> <span class="s-arg">web-01</span>               <span class="s-comment">刪除</span>
+
+<span class="s-comment">## 進入 VM</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb</span> <span class="s-flag">-m</span> <span class="s-arg">web-01</span>                  <span class="s-comment">進入 shell</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ssh</span> <span class="s-arg">web-01@orb</span>                  <span class="s-comment">用 SSH 進入</span>
+
+<span class="s-comment">## Mac 和 VM 共享目錄（超方便！）</span>
+<span class="s-comment"># Mac 的 /Users/you/projects 在 VM 裡可以直接存取：</span>
+<span class="s-prompt">ubuntu$</span> <span class="s-cmd">ls</span> <span class="s-path">/Users/you/projects</span>
+<span class="s-out">eyver  stock-ai  documents ← 直接看到 Mac 的檔案！</span>
+
+<span class="s-comment">## 在 Mac terminal 直接執行 VM 裡的指令</span>
+<span class="s-prompt">$</span> <span class="s-cmd">orb</span> <span class="s-flag">-m</span> <span class="s-arg">web-01</span> <span class="s-arg">sudo systemctl status tomcat</span></div>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>Mac 與 VM 共用磁碟</strong>：OrbStack 的 VM 可以直接讀取 Mac 的檔案，不需要 scp 傳檔，非常方便！</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>存取 VM 裡的 Web 服務</h2><span class="header-tag tag-blue">網路存取</span></div>
+      <div class="card-body">
+        <p>OrbStack 的 VM 有自動的域名，不需要查 IP。</p>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">在 Mac 瀏覽器輸入</span></div>
+          <div class="terminal-body"><span class="s-comment"># VM 名稱是 my-server，直接用域名存取</span>
+http://my-server.orb.local          <span class="s-comment">← Nginx Port 80</span>
+http://my-server.orb.local:8080     <span class="s-comment">← Tomcat Port 8080</span>
+
+<span class="s-comment"># 不需要查 IP，OrbStack 自動處理 DNS</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== VMWARE FUSION ===== -->
+<div class="section" id="vmfusion">
+  <div class="section-hero" data-icon="🖥️">
+    <h1>VMware Fusion — 完整 VM 體驗</h1>
+    <div class="tags">
+      <span class="tag tag-orange">Mac 專屬</span>
+      <span class="tag tag-blue">M1~M4 支援</span>
+      <span class="tag tag-green">個人免費</span>
+    </div>
+    <div class="desc">VMware Fusion 是 Mac 上的 VMware，功能與 Windows 版幾乎相同，2024 年起個人使用免費。需要快照、Clone 等完整 VM 功能時推薦。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>VMware Fusion vs OrbStack 怎麼選？</h2><span class="header-tag tag-blue">比較</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th>需求</th><th>選哪個</th></tr>
+          <tr><td>學習 Linux 指令、裝 JDK/Tomcat/Nginx</td><td>⚡ OrbStack（更輕量快速）</td></tr>
+          <tr><td>需要 VM 快照（Snapshot）功能</td><td>🖥️ VMware Fusion</td></tr>
+          <tr><td>需要模擬多台機器組網路</td><td>🖥️ VMware Fusion</td></tr>
+          <tr><td>需要 GUI 桌面環境（Ubuntu Desktop）</td><td>🖥️ VMware Fusion</td></tr>
+          <tr><td>筆電電池/記憶體有限</td><td>⚡ OrbStack</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>下載安裝 VMware Fusion</h2><span class="header-tag tag-orange">安裝</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">下載 VMware Fusion Pro（免費）</div>
+              <div class="callout info">
+                <span class="callout-icon">🔗</span>
+                <div class="callout-body">
+                  前往 <strong>Broadcom 官網</strong> → 免費註冊帳號<br>
+                  搜尋「VMware Fusion Pro」→ 選 macOS 版本下載<br>
+                  網址：support.broadcom.com
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">下載 Ubuntu Server ISO</div>
+              <div class="callout warn">
+                <span class="callout-icon">⚠️</span>
+                <div class="callout-body">
+                  <strong>Apple Silicon（M1~M4）要下載 ARM 版！</strong><br>
+                  ubuntu.com → Download → Ubuntu Server → <strong>選 ARM 版（ubuntu-22.04-live-server-arm64.iso）</strong><br><br>
+                  Intel Mac → 一般的 <strong>amd64</strong> 版本即可
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">建立新 VM</div>
+              <div class="step-desc">VMware Fusion → File → New → 拖曳 ISO 進去 → 依照安裝精靈完成</div>
+              <table class="data-table">
+                <tr><th>設定項目</th><th>建議值</th></tr>
+                <tr><td>記憶體</td><td>2048 MB（建議 4096 MB）</td></tr>
+                <tr><td>CPU</td><td>2 核心</td></tr>
+                <tr><td>硬碟</td><td>20 GB</td></tr>
+                <tr><td>網路</td><td>NAT（預設即可）</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">從 Mac Terminal 用 SSH 連線</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-comment"># 先在 VM 裡查 IP</span>
+<span class="s-prompt">ubuntu$</span> <span class="s-cmd">ip addr show</span> | <span class="s-cmd">grep</span> <span class="s-str">"inet "</span>
+<span class="s-out">inet 192.168.50.130/24</span>
+
+<span class="s-comment"># 在 Mac Terminal 連線</span>
+<span class="s-prompt">mac$</span> <span class="s-cmd">ssh</span> <span class="s-arg">admin@192.168.50.130</span>
+<span class="s-out-hi">admin@ubuntu-server:~$</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>從 Mac 傳檔案到 VM</h2><span class="header-tag tag-green">檔案傳輸</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">macOS Terminal</span></div>
+          <div class="terminal-body"><span class="s-comment"># scp 傳送 WAR 檔到 VM</span>
+<span class="s-prompt">mac$</span> <span class="s-cmd">scp</span> <span class="s-path">~/Downloads/myapp.war</span> <span class="s-arg">admin@192.168.50.130:/tmp/</span>
+
+<span class="s-comment"># scp 從 VM 下載 log</span>
+<span class="s-prompt">mac$</span> <span class="s-cmd">scp</span> <span class="s-arg">admin@192.168.50.130</span><span class="s-path">:/opt/tomcat/latest/logs/catalina.out</span> <span class="s-path">~/Desktop/</span>
+
+<span class="s-comment"># rsync 同步整個目錄（更快，只傳差異）</span>
+<span class="s-prompt">mac$</span> <span class="s-cmd">rsync</span> <span class="s-flag">-avz</span> <span class="s-path">~/myproject/</span> <span class="s-arg">admin@192.168.50.130</span><span class="s-path">:/opt/myapp/</span></div>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>推薦工具</strong>：Mac 上可以用 <strong>Cyberduck</strong>（免費）或 <strong>Transmit</strong> 做 SFTP 圖形介面傳檔，拖曳就好。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>VMware Fusion 快照使用</h2><span class="header-tag tag-yellow">快照</span></div>
+      <div class="card-body">
+        <p>功能和 Windows 版 VMware 完全一樣：</p>
+        <ul>
+          <li>📷 建立快照：<strong>Virtual Machine → Snapshots → Take Snapshot</strong></li>
+          <li>⏪ 還原快照：<strong>Virtual Machine → Snapshots → 選擇快照 → Restore</strong></li>
+          <li>🗑️ 刪除快照：Snapshot Manager 裡選取後刪除</li>
+        </ul>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body">建議節點：<strong>01-Ubuntu安裝完成</strong>、<strong>02-JDK安裝完成</strong>、<strong>03-Tomcat設定完成</strong>，出錯可以隨時還原。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== VMWARE ===== -->
+<div class="section" id="vmware">
+  <div class="section-hero" data-icon="🖥️">
+    <h1>VMware — 虛擬機建立</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第一步</span>
+      <span class="tag tag-blue">Windows 上跑 Linux</span>
+    </div>
+    <div class="desc">在 Windows 電腦上透過 VMware Workstation 建立 Linux 虛擬機，是學習和測試環境的最佳選擇。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>VMware 是什麼？為什麼需要它？</h2><span class="header-tag tag-blue">概念</span></div>
+      <div class="card-body">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+          <div style="border:2px solid #334155;border-radius:8px;padding:12px;position:relative;">
+            <div style="position:absolute;top:-10px;left:16px;background:#060a0f;padding:0 6px;color:var(--orange);font-size:11px;">Windows 11</div>
+            <div style="border:2px solid #3a2a10;border-radius:6px;padding:12px;margin-top:4px;">
+              <div style="color:var(--orange);font-size:11px;margin-bottom:10px;">VMware Workstation Pro</div>
+              <div style="display:flex;gap:12px;flex-wrap:wrap;">
+                <div style="border:1px solid #2a4a2a;border-radius:5px;padding:8px 12px;color:var(--green);font-size:11px;line-height:1.7;">
+                  Ubuntu 22.04<br>Web Server<br>Nginx<br><span style="color:var(--text-dim)">192.168.1.10</span>
+                </div>
+                <div style="border:1px solid #2a4a2a;border-radius:5px;padding:8px 12px;color:var(--green);font-size:11px;line-height:1.7;">
+                  Ubuntu 22.04<br>AP Server<br>Tomcat<br><span style="color:var(--text-dim)">192.168.1.11</span>
+                </div>
+              </div>
+              <div style="color:var(--text-dim);font-size:11px;margin-top:10px;">↕ 虛擬網路互相通訊</div>
+            </div>
+          </div>
+        </div>
+        <p><strong>優點：</strong></p>
+        <ul>
+          <li>💾 <strong>快照（Snapshot）</strong>：隨時備份、出錯立刻還原</li>
+          <li>🔒 <strong>隔離</strong>：VM 壞了不影響 Windows 主機</li>
+          <li>💻 <strong>多台同時</strong>：一台電腦模擬整個伺服器叢集</li>
+          <li>📋 <strong>Clone（複製）</strong>：設定好一台，快速複製多台</li>
+        </ul>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>下載與安裝 VMware</h2><span class="header-tag tag-orange">步驟</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">下載 VMware Workstation Pro</div>
+              <div class="step-desc">2024 年起 VMware Workstation Pro 個人使用免費</div>
+              <div class="callout info">
+                <span class="callout-icon">🔗</span>
+                <div class="callout-body">前往 <strong>Broadcom 官網</strong> → 搜尋 VMware Workstation Pro → 選 Windows 版本下載<br>網址：support.broadcom.com（需要免費註冊帳號）</div>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">下載 Ubuntu Server ISO</div>
+              <div class="step-desc">Ubuntu Server（無 GUI）比 Desktop 版輕量，適合伺服器環境</div>
+              <div class="callout info">
+                <span class="callout-icon">🔗</span>
+                <div class="callout-body">ubuntu.com/download/server → 下載 Ubuntu Server 22.04 LTS（約 1.5GB）</div>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">建立新虛擬機</div>
+              <div class="step-desc">VMware → File → New Virtual Machine</div>
+              <table class="data-table">
+                <tr><th>設定項目</th><th>建議值</th><th>說明</th></tr>
+                <tr><td>安裝方式</td><td>Custom（進階）</td><td>有更多設定選項</td></tr>
+                <tr><td>ISO 映像</td><td>選擇剛下載的 .iso</td><td>—</td></tr>
+                <tr><td>作業系統</td><td>Linux > Ubuntu 64-bit</td><td>—</td></tr>
+                <tr><td>VM 名稱</td><td>ubuntu-server-01</td><td>方便識別</td></tr>
+                <tr><td>CPU</td><td>2 核心</td><td>主機 8 核心以上可給 4</td></tr>
+                <tr><td>記憶體</td><td>2048 MB</td><td>最少 1GB，建議 2GB</td></tr>
+                <tr><td>硬碟</td><td>20 GB</td><td>練習用 20GB 夠了</td></tr>
+                <tr><td>網路類型</td><td>NAT</td><td>能連網且 Host 能連 VM</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">啟動虛擬機，進行 Ubuntu 安裝</div>
+              <div class="step-desc">點選 Power On，進入 Ubuntu 安裝畫面（下一章節說明）</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>VMware 網路模式詳解</h2><span class="header-tag tag-blue">網路</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th>模式</th><th>VM ↔ Internet</th><th>VM ↔ Host</th><th>VM ↔ VM</th><th>適用場景</th></tr>
+          <tr>
+            <td><strong>NAT</strong></td>
+            <td>✅ 透過 Host 共享</td><td>✅</td><td>✅</td>
+            <td>一般開發練習（推薦）</td>
+          </tr>
+          <tr>
+            <td><strong>Bridged</strong></td>
+            <td>✅ 直接連路由器</td><td>✅</td><td>✅</td>
+            <td>VM 需要跟公司內網其他機器通</td>
+          </tr>
+          <tr>
+            <td><strong>Host-only</strong></td>
+            <td>❌</td><td>✅</td><td>✅</td>
+            <td>完全隔離的安全測試環境</td>
+          </tr>
+        </table>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>建議用 NAT</strong>：VM 可以連網安裝套件，Host（你的 Windows）也可以用 SSH 連進 VM，最方便。</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>快照（Snapshot）使用</h2><span class="header-tag tag-green">重要功能</span></div>
+      <div class="card-body">
+        <p>快照是 VM 最重要的功能之一，建議每個重要步驟後都建立快照。</p>
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">📷</div>
+            <div class="step-content">
+              <div class="step-title">建立快照：VM → Snapshot → Take Snapshot</div>
+              <div class="step-desc">建議命名：「01-Ubuntu安裝完成」、「02-JDK安裝完成」、「03-Tomcat設定完成」</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">⏪</div>
+            <div class="step-content">
+              <div class="step-title">還原快照：VM → Snapshot → Snapshot Manager → Restore</div>
+              <div class="step-desc">操作出錯時，立刻還原到上一個快照，不需要重裝</div>
+            </div>
+          </div>
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body"><strong>注意</strong>：快照會佔用磁碟空間，練習完後可以合併或刪除不需要的快照。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== UBUNTU INSTALL ===== -->
+<div class="section" id="ubuntu">
+  <div class="section-hero" data-icon="🐧">
+    <h1>Ubuntu Server 安裝</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第二步</span>
+      <span class="tag tag-green">22.04 LTS</span>
+    </div>
+    <div class="desc">Ubuntu Server 22.04 LTS 是目前最穩定的 Linux 伺服器版本，LTS = 5年長期支援。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>Ubuntu Server 安裝步驟</h2><span class="header-tag tag-orange">安裝</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">選語言與鍵盤</div>
+              <div class="step-desc">Language: English（建議用英文，log 不會出現亂碼）；Keyboard: 選你的鍵盤型號</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">選安裝類型</div>
+              <div class="step-desc">選「Ubuntu Server」（不要選 minimized），保留常用工具</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">網路設定</div>
+              <div class="step-desc">DHCP 自動取得 IP（練習用 OK），如果要固定 IP 之後再設定。記下顯示的 IP 地址。</div>
+              <div class="callout info">
+                <span class="callout-icon">ℹ️</span>
+                <div class="callout-body">IP 會顯示在這個畫面，通常是 <code>192.168.x.x</code>，記下來之後要用 SSH 連線</div>
+              </div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">磁碟分割</div>
+              <div class="step-desc">選「Use an entire disk」→ 使用預設，練習環境不需要手動分割</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <div class="step-title">建立使用者帳號</div>
+              <table class="data-table">
+                <tr><th>欄位</th><th>填寫說明</th></tr>
+                <tr><td>Your name</td><td>顯示名稱（隨意）</td></tr>
+                <tr><td>Server name</td><td>主機名稱，例如 <code>ubuntu-server-01</code></td></tr>
+                <tr><td>Username</td><td>登入帳號，例如 <code>admin</code></td></tr>
+                <tr><td>Password</td><td>設定密碼（記下來！）</td></tr>
+              </table>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">6</div>
+            <div class="step-content">
+              <div class="step-title">安裝 OpenSSH Server</div>
+              <div class="step-desc"><strong>一定要勾選！</strong>這樣才能從 Windows 用 SSH 連進去操作，不用每次在 VMware 視窗裡打字。</div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">7</div>
+            <div class="step-content">
+              <div class="step-title">等待安裝完成 → Reboot</div>
+              <div class="step-desc">重開機後看到登入提示就成功了，輸入剛才設定的帳號密碼</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>從 Windows 用 SSH 連線（推薦！）</h2><span class="header-tag tag-green">SSH 連線</span></div>
+      <div class="card-body">
+        <p>不要每次都在 VMware 黑視窗裡操作，用 SSH 連線更方便（可以複製貼上！）</p>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">Windows PowerShell 或 CMD</span></div>
+          <div class="terminal-body"><span class="s-comment"># 確認 VM 的 IP（在 Ubuntu 裡執行）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ip addr show</span>
+<span class="s-out">2: ens33: ... inet <span style="color:var(--cyan)">192.168.50.130</span>/24 ...</span>
+
+<span class="s-comment"># 在 Windows PowerShell 連線</span>
+<span class="s-prompt">PS&gt;</span> <span class="s-cmd">ssh</span> <span class="s-arg">admin@192.168.50.130</span>
+<span class="s-out">The authenticity of host '192.168.50.130' can't be established.</span>
+<span class="s-out">Are you sure you want to continue connecting? </span><span class="s-arg">yes</span>
+<span class="s-out">admin@192.168.50.130's password: </span><span class="s-arg">（輸入密碼）</span>
+
+<span class="s-comment"># 成功！看到這個提示就連進去了</span>
+<span class="s-out-hi">admin@ubuntu-server-01:~$</span></div>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>推薦工具</strong>：Windows 的 <code>Terminal</code> 或 <code>MobaXterm</code>（免費，有 SFTP 可以拖曳傳檔案）</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== BASIC SETUP ===== -->
+<div class="section" id="basic">
+  <div class="section-hero" data-icon="🔧">
+    <h1>Ubuntu 初始系統設定</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第二步</span>
+      <span class="tag tag-yellow">安裝後必做</span>
+    </div>
+    <div class="desc">Ubuntu 安裝完後，需要做幾個基本設定才能正式使用。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>安裝後必做設定</h2><span class="header-tag tag-orange">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — 初始設定</span></div>
+          <div class="terminal-body"><span class="s-comment">## 1. 更新系統（必做！）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo apt update</span> <span class="s-flag">&amp;&amp;</span> <span class="s-cmd">sudo apt upgrade</span> <span class="s-flag">-y</span>
+
+<span class="s-comment">## 2. 安裝常用工具</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo apt install</span> <span class="s-flag">-y</span> <span class="s-arg">curl wget vim net-tools htop unzip git</span>
+
+<span class="s-comment">## 3. 設定時區為台灣</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo timedatectl set-timezone</span> <span class="s-arg">Asia/Taipei</span>
+<span class="s-prompt">$</span> <span class="s-cmd">timedatectl</span>
+<span class="s-out">               Local time: Thu 2024-04-16 09:00:00 CST</span>
+<span class="s-out">           Universal time: Thu 2024-04-16 01:00:00 UTC</span>
+<span class="s-out">                 Time zone: Asia/Taipei (CST, +0800)</span>
+
+<span class="s-comment">## 4. 設定固定 IP（NAT 模式下）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo vi</span> <span class="s-path">/etc/netplan/00-installer-config.yaml</span>
+<span class="s-comment"># 修改內容如下：</span>
+<span class="s-out">network:</span>
+<span class="s-out">  ethernets:</span>
+<span class="s-out">    ens33:</span>
+<span class="s-out">      dhcp4: no</span>
+<span class="s-out">      addresses: [192.168.50.130/24]</span>
+<span class="s-out">      routes:</span>
+<span class="s-out">        - to: default</span>
+<span class="s-out">          via: 192.168.50.2   ← NAT 閘道（VMware 預設）</span>
+<span class="s-out">      nameservers:</span>
+<span class="s-out">        addresses: [8.8.8.8]</span>
+
+<span class="s-prompt">$</span> <span class="s-cmd">sudo netplan apply</span>
+
+<span class="s-comment">## 5. 設定防火牆</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw allow ssh</span>    <span class="s-comment"># 保留 SSH 連線！</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw allow 80</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw allow 443</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw allow 8080</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw enable</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw status</span></div>
+        </div>
+        <div class="callout danger">
+          <span class="callout-icon">🚨</span>
+          <div class="callout-body"><strong>重要</strong>：啟用防火牆前，<strong>一定要先 <code>sudo ufw allow ssh</code></strong>，否則啟用後會被鎖在外面！</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== JDK ===== -->
+<div class="section" id="jdk">
+  <div class="section-hero" data-icon="☕">
+    <h1>JDK 安裝設定</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第三步</span>
+      <span class="tag tag-blue">Java 17 / 21</span>
+    </div>
+    <div class="desc">Tomcat 運行需要 JDK，根據你的應用程式選擇 JDK 版本（eyver 用 JDK 17，Stock AI 用 JDK 21）。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>安裝 OpenJDK</h2><span class="header-tag tag-orange">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## 查看可安裝的 JDK 版本</span>
+<span class="s-prompt">$</span> <span class="s-cmd">apt search</span> <span class="s-arg">openjdk</span> | <span class="s-cmd">grep</span> <span class="s-str">"openjdk-.*-jdk"</span>
+
+<span class="s-comment">## 安裝 JDK 17（Spring Boot 3 / eyver 用）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo apt install</span> <span class="s-flag">-y</span> <span class="s-arg">openjdk-17-jdk</span>
+
+<span class="s-comment">## 安裝 JDK 21（新版 Spring Boot 用）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo apt install</span> <span class="s-flag">-y</span> <span class="s-arg">openjdk-21-jdk</span>
+
+<span class="s-comment">## 驗證安裝</span>
+<span class="s-prompt">$</span> <span class="s-cmd">java</span> <span class="s-flag">-version</span>
+<span class="s-out">openjdk version "17.0.10" 2024-01-16</span>
+<span class="s-out">OpenJDK Runtime Environment (build 17.0.10+7)</span>
+<span class="s-out">OpenJDK 64-Bit Server VM (build 17.0.10+7, mixed mode)</span>
+
+<span class="s-prompt">$</span> <span class="s-cmd">javac</span> <span class="s-flag">-version</span>
+<span class="s-out">javac 17.0.10</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>設定 JAVA_HOME</h2><span class="header-tag tag-blue">環境變數</span></div>
+      <div class="card-body">
+        <p>Tomcat 需要 <code>JAVA_HOME</code> 環境變數才能啟動。</p>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## 找出 JDK 安裝路徑</span>
+<span class="s-prompt">$</span> <span class="s-cmd">update-alternatives</span> <span class="s-flag">--list</span> <span class="s-arg">java</span>
+<span class="s-out">/usr/lib/jvm/java-17-openjdk-amd64/bin/java</span>
+
+<span class="s-comment">## 設定環境變數（全系統生效）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo vi</span> <span class="s-path">/etc/environment</span>
+<span class="s-comment"># 在檔案最後加入：</span>
+<span class="s-out">JAVA_HOME="/usr/lib/jvm/java-17-openjdk-amd64"</span>
+
+<span class="s-comment">## 套用設定</span>
+<span class="s-prompt">$</span> <span class="s-cmd">source</span> <span class="s-path">/etc/environment</span>
+
+<span class="s-comment">## 驗證</span>
+<span class="s-prompt">$</span> <span class="s-cmd">echo</span> <span class="s-arg">$JAVA_HOME</span>
+<span class="s-out">/usr/lib/jvm/java-17-openjdk-amd64</span>
+
+<span class="s-comment">## 多版本 JDK 切換</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo update-alternatives</span> <span class="s-flag">--config</span> <span class="s-arg">java</span>
+<span class="s-out">  選擇    路徑                                   優先度</span>
+<span class="s-out">* 0       /usr/lib/jvm/java-17-openjdk-amd64     1711</span>
+<span class="s-out">  1       /usr/lib/jvm/java-21-openjdk-amd64     2100</span>
+<span class="s-out">輸入要保持目前選擇[*]的選項，或輸入選擇號碼：</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== NGINX ===== -->
+<div class="section" id="nginx">
+  <div class="section-hero" data-icon="🌐">
+    <h1>Nginx — Web Server 安裝設定</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第四步</span>
+      <span class="tag tag-blue">對外入口</span>
+    </div>
+    <div class="desc">Nginx 負責接收外部 HTTP/HTTPS 請求，然後反向代理（Reverse Proxy）到後端 Tomcat。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>安裝 Nginx</h2><span class="header-tag tag-orange">安裝</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## 安裝</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo apt install</span> <span class="s-flag">-y</span> <span class="s-arg">nginx</span>
+
+<span class="s-comment">## 啟動並設定開機自啟</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl start nginx</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl enable nginx</span>
+
+<span class="s-comment">## 確認狀態</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl status nginx</span>
+<span class="s-out">● nginx.service - A high performance web server</span>
+<span class="s-out">     Loaded: loaded (/lib/systemd/system/nginx.service; enabled)</span>
+<span class="s-out-hi">     Active: active (running)</span>
+
+<span class="s-comment">## 在瀏覽器輸入 VM 的 IP 應該看到 Nginx 歡迎頁</span>
+<span class="s-comment"># http://192.168.50.130</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Nginx 目錄結構</h2><span class="header-tag tag-blue">結構</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
+          <div class="terminal-body"><span class="s-out">/etc/nginx/</span>
+├── <span style="color:var(--cyan)">nginx.conf</span>              主設定檔（通常不直接改）
+├── <span style="color:var(--cyan)">sites-available/</span>        設定檔存放目錄
+│   ├── default             預設網站設定
+│   └── myapp               ← 你的自訂設定放這
+├── <span style="color:var(--cyan)">sites-enabled/</span>          啟用的設定（用 symlink 連結）
+│   └── myapp → ../sites-available/myapp
+└── <span style="color:var(--cyan)">conf.d/</span>                 全域設定
+
+<span class="s-out">/var/log/nginx/</span>
+├── access.log              存取記錄
+└── error.log               錯誤記錄</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>設定反向代理到 Tomcat</h2><span class="header-tag tag-green">關鍵設定</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">/etc/nginx/sites-available/myapp</span></div>
+          <div class="terminal-body"><span class="s-key">server {</span>
+    listen <span class="s-arg">80</span>;
+    server_name <span class="s-arg">myapp.example.com</span>;  <span class="s-comment"># 或直接用 IP</span>
+
+    <span class="s-comment"># 存取 log</span>
+    access_log <span class="s-path">/var/log/nginx/myapp_access.log</span>;
+    error_log  <span class="s-path">/var/log/nginx/myapp_error.log</span>;
+
+    <span class="s-comment"># 反向代理到 Tomcat</span>
+    location / {
+        proxy_pass         <span class="s-arg">http://127.0.0.1:8080</span>;
+        proxy_set_header   Host $host;
+        proxy_set_header   X-Real-IP $remote_addr;
+        proxy_set_header   X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header   X-Forwarded-Proto $scheme;
+
+        <span class="s-comment"># 超時設定</span>
+        proxy_connect_timeout  <span class="s-arg">30s</span>;
+        proxy_send_timeout     <span class="s-arg">60s</span>;
+        proxy_read_timeout     <span class="s-arg">60s</span>;
+    }
+
+    <span class="s-comment"># 靜態檔案直接由 Nginx 處理（效能更好）</span>
+    location /static/ {
+        root <span class="s-path">/opt/myapp/webroot</span>;
+        expires <span class="s-arg">30d</span>;
+    }
+<span class="s-key">}</span></div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — 啟用設定</span></div>
+          <div class="terminal-body"><span class="s-comment"># 建立 symlink 啟用設定</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ln</span> <span class="s-flag">-s</span> <span class="s-path">/etc/nginx/sites-available/myapp</span> <span class="s-path">/etc/nginx/sites-enabled/</span>
+
+<span class="s-comment"># 刪掉預設設定（避免衝突）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo rm</span> <span class="s-path">/etc/nginx/sites-enabled/default</span>
+
+<span class="s-comment"># 測試設定語法</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo nginx</span> <span class="s-flag">-t</span>
+<span class="s-out">nginx: the configuration file /etc/nginx/nginx.conf syntax is ok</span>
+<span class="s-out">nginx: configuration file /etc/nginx/nginx.conf test is successful</span>
+
+<span class="s-comment"># 重新載入設定（不中斷連線）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl reload nginx</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== SSL ===== -->
+<div class="section" id="ssl">
+  <div class="section-hero" data-icon="🔒">
+    <h1>SSL 憑證掛載</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第四步</span>
+      <span class="tag tag-green">HTTPS</span>
+    </div>
+    <div class="desc">SSL 憑證讓網站可以用 HTTPS 連線。正式環境用 CA 憑證，測試環境可以用 Let's Encrypt 或自簽憑證。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>方法一：Let's Encrypt（免費，正式環境推薦）</h2><span class="header-tag tag-green">免費</span></div>
+      <div class="card-body">
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body">需要有<strong>真實的網域名稱</strong>且 DNS 指向你的伺服器，VM 練習環境無法使用。</div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — Let's Encrypt</span></div>
+          <div class="terminal-body"><span class="s-comment">## 安裝 Certbot</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo apt install</span> <span class="s-flag">-y</span> <span class="s-arg">certbot python3-certbot-nginx</span>
+
+<span class="s-comment">## 申請憑證（自動修改 Nginx 設定）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo certbot</span> <span class="s-flag">--nginx</span> <span class="s-flag">-d</span> <span class="s-arg">myapp.example.com</span>
+<span class="s-out">Congratulations! Your certificate and chain have been saved at:</span>
+<span class="s-out">  /etc/letsencrypt/live/myapp.example.com/fullchain.pem</span>
+
+<span class="s-comment">## 憑證 90 天過期，設定自動更新</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo certbot renew</span> <span class="s-flag">--dry-run</span>  <span class="s-comment"># 測試更新</span>
+<span class="s-comment"># Certbot 安裝後會自動加入 crontab 定期更新</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>方法二：自簽憑證（測試環境 / VM 練習）</h2><span class="header-tag tag-yellow">測試</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — 自簽憑證</span></div>
+          <div class="terminal-body"><span class="s-comment">## 建立目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo mkdir</span> <span class="s-flag">-p</span> <span class="s-path">/etc/nginx/ssl</span>
+
+<span class="s-comment">## 產生自簽憑證（有效期 365 天）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo openssl req</span> <span class="s-flag">-x509 -nodes -days 365 -newkey rsa:2048</span> \
+  <span class="s-flag">-keyout</span> <span class="s-path">/etc/nginx/ssl/myapp.key</span> \
+  <span class="s-flag">-out</span> <span class="s-path">/etc/nginx/ssl/myapp.crt</span> \
+  <span class="s-flag">-subj</span> <span class="s-str">"/C=TW/ST=Taiwan/L=Taipei/O=MyOrg/CN=192.168.50.130"</span>
+
+<span class="s-comment">## 確認憑證</span>
+<span class="s-prompt">$</span> <span class="s-cmd">openssl x509</span> <span class="s-flag">-in</span> <span class="s-path">/etc/nginx/ssl/myapp.crt</span> <span class="s-flag">-text -noout</span> | <span class="s-cmd">grep</span> <span class="s-str">"Not After"</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>方法三：公司 CA 憑證（企業環境）</h2><span class="header-tag tag-blue">企業</span></div>
+      <div class="card-body">
+        <p>公司通常會提供 <code>.crt</code>（憑證）和 <code>.key</code>（私鑰）檔案，直接上傳到伺服器使用。</p>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## 上傳憑證（從 Windows 用 scp）</span>
+<span class="s-prompt">PS&gt;</span> <span class="s-cmd">scp</span> <span class="s-path">myapp.crt myapp.key</span> <span class="s-arg">admin@192.168.50.130:/tmp/</span>
+
+<span class="s-comment">## 移動到正確位置</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo mkdir</span> <span class="s-flag">-p</span> <span class="s-path">/etc/nginx/ssl</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo mv</span> <span class="s-path">/tmp/myapp.crt /tmp/myapp.key</span> <span class="s-path">/etc/nginx/ssl/</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo chmod</span> <span class="s-arg">600</span> <span class="s-path">/etc/nginx/ssl/myapp.key</span>   <span class="s-comment"># 私鑰只有 root 能讀</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Nginx 掛 HTTPS 設定</h2><span class="header-tag tag-green">設定</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">/etc/nginx/sites-available/myapp</span></div>
+          <div class="terminal-body"><span class="s-comment"># HTTP → HTTPS 跳轉</span>
+<span class="s-key">server {</span>
+    listen <span class="s-arg">80</span>;
+    server_name <span class="s-arg">myapp.example.com</span>;
+    return <span class="s-arg">301 https://$host$request_uri</span>;
+<span class="s-key">}</span>
+
+<span class="s-comment"># HTTPS 主設定</span>
+<span class="s-key">server {</span>
+    listen <span class="s-arg">443 ssl</span>;
+    server_name <span class="s-arg">myapp.example.com</span>;
+
+    <span class="s-comment"># 憑證路徑</span>
+    ssl_certificate     <span class="s-path">/etc/nginx/ssl/myapp.crt</span>;
+    ssl_certificate_key <span class="s-path">/etc/nginx/ssl/myapp.key</span>;
+
+    <span class="s-comment"># SSL 安全設定</span>
+    ssl_protocols       <span class="s-arg">TLSv1.2 TLSv1.3</span>;
+    ssl_ciphers         <span class="s-arg">HIGH:!aNULL:!MD5</span>;
+
+    <span class="s-comment"># 反向代理到 Tomcat</span>
+    location / {
+        proxy_pass <span class="s-arg">http://127.0.0.1:8080</span>;
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-Proto https;
+    }
+<span class="s-key">}</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TOMCAT ===== -->
+<div class="section" id="tomcat">
+  <div class="section-hero" data-icon="🐱">
+    <h1>Tomcat 完整安裝</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第五步</span>
+      <span class="tag tag-blue">AP Server</span>
+    </div>
+    <div class="desc">Tomcat 是 Java Web 應用程式的執行容器，負責運行 Spring Boot / WAR 應用程式。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>安裝步驟</h2><span class="header-tag tag-orange">指令</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">建立 Tomcat 專用使用者（安全最佳實踐）</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo useradd</span> <span class="s-flag">-m -U -d</span> <span class="s-path">/opt/tomcat</span> <span class="s-flag">-s</span> <span class="s-arg">/bin/false tomcat</span>
+<span class="s-comment"># -m 建立 home 目錄，-U 建立同名群組，-s /bin/false 禁止登入（安全）</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">下載 Tomcat</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-comment"># 前往 tomcat.apache.org 找最新版本號</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cd</span> <span class="s-path">/tmp</span>
+<span class="s-prompt">$</span> <span class="s-cmd">wget</span> <span class="s-arg">https://downloads.apache.org/tomcat/tomcat-10/v10.1.24/bin/apache-tomcat-10.1.24.tar.gz</span>
+
+<span class="s-comment"># 驗證下載完整性（可選）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sha512sum</span> <span class="s-arg">apache-tomcat-10.1.24.tar.gz</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">解壓安裝</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo tar</span> <span class="s-flag">-xzvf</span> <span class="s-arg">apache-tomcat-10.1.24.tar.gz</span> <span class="s-flag">-C</span> <span class="s-path">/opt/tomcat</span>
+
+<span class="s-comment"># 建立軟連結（方便之後升級版本）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ln</span> <span class="s-flag">-s</span> <span class="s-path">/opt/tomcat/apache-tomcat-10.1.24</span> <span class="s-path">/opt/tomcat/latest</span>
+
+<span class="s-comment"># 設定擁有者</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo chown</span> <span class="s-flag">-R</span> <span class="s-arg">tomcat:tomcat</span> <span class="s-path">/opt/tomcat</span>
+
+<span class="s-comment"># 給執行權限</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo chmod</span> <span class="s-flag">+x</span> <span class="s-path">/opt/tomcat/latest/bin/*.sh</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">測試啟動</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo</span> <span class="s-flag">-u tomcat</span> <span class="s-path">/opt/tomcat/latest/bin/startup.sh</span>
+<span class="s-out">Using CATALINA_BASE:   /opt/tomcat/latest</span>
+<span class="s-out">Tomcat started.</span>
+
+<span class="s-comment"># 確認 8080 Port 是否啟動</span>
+<span class="s-prompt">$</span> <span class="s-cmd">netstat</span> <span class="s-flag">-tlnp</span> | <span class="s-cmd">grep</span> <span class="s-arg">8080</span>
+<span class="s-out">tcp6  :::8080  :::*  LISTEN  1234/java</span>
+
+<span class="s-comment"># 看 log</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tail</span> <span class="s-flag">-f</span> <span class="s-path">/opt/tomcat/latest/logs/catalina.out</span>
+
+<span class="s-comment"># 停止</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo</span> <span class="s-flag">-u tomcat</span> <span class="s-path">/opt/tomcat/latest/bin/shutdown.sh</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Tomcat 目錄結構詳解</h2><span class="header-tag tag-blue">結構</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
+          <div class="terminal-body"><span class="s-out">/opt/tomcat/latest/</span>
+├── <span style="color:var(--orange)">bin/</span>
+│   ├── startup.sh        ← 啟動
+│   ├── shutdown.sh       ← 停止
+│   └── catalina.sh       ← 核心啟動腳本（可設定 JVM 參數）
+├── <span style="color:var(--cyan)">conf/</span>
+│   ├── server.xml        ← Port、Connector 設定 ⭐
+│   ├── web.xml           ← 全域 Servlet 設定
+│   ├── context.xml       ← 資料庫連線池設定
+│   └── tomcat-users.xml  ← Manager App 帳號
+├── <span style="color:var(--green)">logs/</span>
+│   ├── catalina.out      ← 主要 log（最重要！）⭐
+│   ├── localhost.YYYY-MM-DD.log
+│   └── access.YYYY-MM-DD.log
+├── <span style="color:var(--purple)">webapps/</span>
+│   ├── ROOT/             ← 預設首頁（/）
+│   └── myapp/            ← 部署後自動解壓的 WAR ⭐
+└── <span style="color:var(--yellow)">work/</span>                 ← JSP 編譯暫存，出問題可以清掉</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== WAR ===== -->
+<div class="section" id="war">
+  <div class="section-hero" data-icon="📦">
+    <h1>WAR 部署流程</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第五步</span>
+      <span class="tag tag-green">部署</span>
+    </div>
+    <div class="desc">WAR（Web Application Archive）是 Java Web 應用程式的打包格式，直接丟進 webapps 目錄就會自動部署。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>部署 WAR 的完整流程</h2><span class="header-tag tag-orange">流程</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">從 Windows 上傳 WAR 到伺服器</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-comment"># 方法一：scp 指令（Windows PowerShell）</span>
+<span class="s-prompt">PS&gt;</span> <span class="s-cmd">scp</span> <span class="s-path">myapp.war</span> <span class="s-arg">admin@192.168.50.130:/tmp/</span>
+
+<span class="s-comment"># 方法二：MobaXterm 的 SFTP 面板直接拖曳</span>
+
+<span class="s-comment"># 方法三：如果有 Jenkins/CI，自動上傳</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">停止 Tomcat（先停再部署）</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl stop tomcat</span>
+<span class="s-comment"># 確認已停止</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl status tomcat</span>
+<span class="s-out">● tomcat.service</span>
+<span class="s-out">   Active: <span style="color:var(--red)">inactive (dead)</span></span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">清除舊版本（避免衝突）</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-comment"># 刪除舊的解壓目錄（保留 WAR 備份）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo rm</span> <span class="s-flag">-rf</span> <span class="s-path">/opt/tomcat/latest/webapps/myapp</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo rm</span> <span class="s-path">/opt/tomcat/latest/webapps/myapp.war</span>
+
+<span class="s-comment"># 清除 work 暫存</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo rm</span> <span class="s-flag">-rf</span> <span class="s-path">/opt/tomcat/latest/work/Catalina/localhost/myapp</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">複製 WAR 到 webapps</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo cp</span> <span class="s-path">/tmp/myapp.war</span> <span class="s-path">/opt/tomcat/latest/webapps/</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo chown</span> <span class="s-arg">tomcat:tomcat</span> <span class="s-path">/opt/tomcat/latest/webapps/myapp.war</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">5</div>
+            <div class="step-content">
+              <div class="step-title">啟動 Tomcat，觀察 log</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl start tomcat</span>
+
+<span class="s-comment"># 即時看部署過程（等看到 Server startup 表示成功）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tail</span> <span class="s-flag">-f</span> <span class="s-path">/opt/tomcat/latest/logs/catalina.out</span>
+<span class="s-out">...Deploying web application archive myapp.war</span>
+<span class="s-out">...Deployment of web application archive myapp.war has finished</span>
+<span class="s-out-hi">...Server startup in [3456] milliseconds ✅</span>
+
+<span class="s-comment"># 如果有 ERROR 找問題</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-str">"ERROR\|Exception"</span> <span class="s-path">/opt/tomcat/latest/logs/catalina.out</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">6</div>
+            <div class="step-content">
+              <div class="step-title">確認部署成功</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">curl</span> <span class="s-arg">http://localhost:8080/myapp/health</span>
+<span class="s-out">{"status":"UP"}</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== SERVICE ===== -->
+<div class="section" id="service">
+  <div class="section-hero" data-icon="⚡">
+    <h1>設定 Tomcat 系統服務</h1>
+    <div class="tags">
+      <span class="tag tag-orange">第五步</span>
+      <span class="tag tag-yellow">systemd</span>
+    </div>
+    <div class="desc">設定成系統服務（systemd）後，Tomcat 會開機自動啟動，也可以用 systemctl 統一管理。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>建立 systemd Service 檔</h2><span class="header-tag tag-orange">設定</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo vi</span> <span class="s-path">/etc/systemd/system/tomcat.service</span></div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">/etc/systemd/system/tomcat.service</span></div>
+          <div class="terminal-body"><span class="s-key">[Unit]</span>
+Description=Apache Tomcat Web Application Container
+After=network.target
+
+<span class="s-key">[Service]</span>
+Type=forking
+User=tomcat
+Group=tomcat
+
+<span class="s-comment"># 環境變數</span>
+Environment="JAVA_HOME=/usr/lib/jvm/java-17-openjdk-amd64"
+Environment="CATALINA_HOME=/opt/tomcat/latest"
+Environment="CATALINA_BASE=/opt/tomcat/latest"
+
+<span class="s-comment"># JVM 記憶體設定（根據伺服器配備調整）</span>
+Environment="CATALINA_OPTS=-Xms512M -Xmx1024M -server"
+
+ExecStart=/opt/tomcat/latest/bin/startup.sh
+ExecStop=/opt/tomcat/latest/bin/shutdown.sh
+
+<span class="s-comment"># 非正常終止時自動重啟</span>
+Restart=on-failure
+RestartSec=10
+
+<span class="s-key">[Install]</span>
+WantedBy=multi-user.target</div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — 啟用服務</span></div>
+          <div class="terminal-body"><span class="s-comment"># 重新載入 systemd 設定</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl daemon-reload</span>
+
+<span class="s-comment"># 設定開機自啟</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl enable tomcat</span>
+
+<span class="s-comment"># 啟動</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl start tomcat</span>
+
+<span class="s-comment"># 常用管理指令</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl status  tomcat</span>   <span class="s-comment"># 查狀態</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl stop    tomcat</span>   <span class="s-comment"># 停止</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl restart tomcat</span>   <span class="s-comment"># 重啟</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo systemctl reload  tomcat</span>   <span class="s-comment"># 重新載入設定</span>
+
+<span class="s-comment"># 查 systemd log</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo journalctl</span> <span class="s-flag">-u</span> <span class="s-arg">tomcat</span> <span class="s-flag">-f</span>   <span class="s-comment"># 即時</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo journalctl</span> <span class="s-flag">-u</span> <span class="s-arg">tomcat</span> <span class="s-flag">--since "1 hour ago"</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== ARCH ===== -->
+<div class="section" id="arch">
+  <div class="section-hero" data-icon="🏗️">
+    <h1>Web Server vs AP Server 架構</h1>
+    <div class="tags">
+      <span class="tag tag-blue">架構概念</span>
+      <span class="tag tag-green">Nginx + Tomcat</span>
+    </div>
+    <div class="desc">理解 Nginx（Web Server）和 Tomcat（AP Server）的分工，是設計伺服器架構的基礎。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>完整架構圖</h2><span class="header-tag tag-blue">架構</span></div>
+      <div class="card-body">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:24px 20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:0;">
+            <div style="color:var(--text-dim);font-size:11px;margin-bottom:6px;">Internet</div>
+            <div style="color:var(--text-muted);">│ Port 80 / 443</div>
+            <div style="color:var(--text-muted);">▼</div>
+            <div style="border:2px solid var(--green);border-radius:8px;padding:14px 24px;width:100%;max-width:340px;margin:4px 0;">
+              <div style="color:var(--green);font-weight:700;margin-bottom:6px;">🌐 Nginx（Web Server）</div>
+              <div style="color:var(--text-dim);font-size:11px;line-height:1.8;">✅ 處理 HTTPS / SSL 憑證<br>✅ 服務靜態檔案（快）<br>✅ 負載均衡分流<br>✅ 請求壓縮、快取</div>
+            </div>
+            <div style="color:var(--text-muted);">│ HTTP 內部 Port 8080</div>
+            <div style="color:var(--text-muted);">▼</div>
+            <div style="border:2px solid var(--blue);border-radius:8px;padding:14px 24px;width:100%;max-width:340px;margin:4px 0;">
+              <div style="color:var(--blue);font-weight:700;margin-bottom:6px;">🐱 Tomcat（AP Server）</div>
+              <div style="color:var(--text-dim);font-size:11px;line-height:1.8;">✅ 執行 Java / Spring Boot<br>✅ 處理業務邏輯<br>✅ Session 管理<br>❌ 不直接對外</div>
+            </div>
+            <div style="color:var(--text-muted);">│ JDBC Port 5432 / 1521</div>
+            <div style="color:var(--text-muted);">▼</div>
+            <div style="border:2px solid var(--yellow);border-radius:8px;padding:14px 24px;width:100%;max-width:340px;margin:4px 0;">
+              <div style="color:var(--yellow);font-weight:700;">🗄️ Database</div>
+              <div style="color:var(--text-dim);font-size:11px;margin-top:4px;">PostgreSQL / Oracle</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>各自負責什麼？</h2><span class="header-tag tag-green">分工</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th></th><th>🌐 Nginx (Web Server)</th><th>🐱 Tomcat (AP Server)</th></tr>
+          <tr><td><strong>對外 Port</strong></td><td>80（HTTP）/ 443（HTTPS）</td><td>8080（僅內部）</td></tr>
+          <tr><td><strong>SSL</strong></td><td>✅ 在這裡終止 SSL</td><td>不需要處理</td></tr>
+          <tr><td><strong>靜態檔</strong></td><td>✅ 直接回應（速度快）</td><td>也可以，但沒 Nginx 快</td></tr>
+          <tr><td><strong>動態請求</strong></td><td>轉發給 Tomcat</td><td>✅ Java 執行業務邏輯</td></tr>
+          <tr><td><strong>負載均衡</strong></td><td>✅ 分流多台 Tomcat</td><td>—</td></tr>
+          <tr><td><strong>壓縮/快取</strong></td><td>✅ gzip 回應壓縮</td><td>—</td></tr>
+          <tr><td><strong>連線數上限</strong></td><td>可處理數萬並發</td><td>受 JVM 限制</td></tr>
+        </table>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>為什麼要分開？</strong>Nginx 用 C 語言寫的，處理大量 HTTP 連線效率極高。Tomcat 用 Java，適合業務邏輯但不適合直接對大量連線。兩者搭配各取所長。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== LOAD BALANCE ===== -->
+<div class="section" id="lb">
+  <div class="section-hero" data-icon="⚖️">
+    <h1>Load Balance / Session 處理</h1>
+    <div class="tags">
+      <span class="tag tag-blue">高可用</span>
+      <span class="tag tag-orange">進階</span>
+    </div>
+    <div class="desc">多台 Tomcat 時，需要考慮負載均衡和 Session 問題。這是企業環境的重要架構概念。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>問題：多台 Tomcat 的 Session 困境</h2><span class="header-tag tag-red">問題</span></div>
+      <div class="card-body">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+          <div style="display:flex;flex-direction:column;gap:10px;">
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="color:var(--text-dim);">使用者 第1次</span>
+              <span style="color:var(--text-muted);">→</span>
+              <span style="color:var(--cyan);">Nginx</span>
+              <span style="color:var(--text-muted);">→</span>
+              <span style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:4px;padding:2px 8px;color:var(--green);">Tomcat-A</span>
+              <span style="color:var(--green);">✅ 登入成功，Session 存在 A</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+              <span style="color:var(--text-dim);">使用者 第2次</span>
+              <span style="color:var(--text-muted);">→</span>
+              <span style="color:var(--cyan);">Nginx</span>
+              <span style="color:var(--text-muted);">→</span>
+              <span style="background:rgba(248,113,113,0.1);border:1px solid rgba(248,113,113,0.3);border-radius:4px;padding:2px 8px;color:var(--red);">Tomcat-B</span>
+              <span style="color:var(--red);">❌ 找不到 Session！要求重新登入</span>
+            </div>
+            <div style="border-top:1px solid var(--border);padding-top:10px;color:var(--yellow);font-size:11px;">
+              ⚠️ 原因：Session 預設儲存在各自 Tomcat 記憶體，不共享
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>解法一：Session Sticky（IP Hash）</h2><span class="header-tag tag-yellow">解法一</span></div>
+      <div class="card-body">
+        <p>讓同一個使用者的請求，永遠送到同一台 Tomcat。</p>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">/etc/nginx/sites-available/myapp</span></div>
+          <div class="terminal-body"><span class="s-key">upstream</span> <span class="s-arg">tomcat_cluster</span> {
+    <span class="s-flag">ip_hash</span>;   <span class="s-comment"># 同一個 IP 永遠送同一台</span>
+    server <span class="s-arg">192.168.50.131:8080</span>;
+    server <span class="s-arg">192.168.50.132:8080</span>;
+}
+
+<span class="s-key">server {</span>
+    location / {
+        proxy_pass <span class="s-arg">http://tomcat_cluster</span>;
+    }
+<span class="s-key">}</span></div>
+        </div>
+        <div class="grid-2" style="margin-top:12px;">
+          <div class="callout tip" style="margin:0">
+            <span class="callout-icon">✅</span>
+            <div class="callout-body"><strong>優點</strong>：設定簡單，不需要修改應用程式</div>
+          </div>
+          <div class="callout warn" style="margin:0">
+            <span class="callout-icon">⚠️</span>
+            <div class="callout-body"><strong>缺點</strong>：那台 Tomcat 掛了，Session 就消失，使用者需重新登入</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>解法二：Session 共享（Redis）— 建議</h2><span class="header-tag tag-green">最佳解</span></div>
+      <div class="card-body">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+          <div style="display:flex;flex-direction:column;align-items:center;gap:6px;">
+            <div style="color:var(--text-dim);">使用者</div>
+            <div style="color:var(--text-muted);">↓</div>
+            <div style="border:1px solid rgba(96,165,250,0.4);border-radius:6px;padding:6px 20px;color:var(--blue);">Nginx（輪詢，任何一台都行）</div>
+            <div style="color:var(--text-muted);">↓</div>
+            <div style="display:flex;gap:16px;flex-wrap:wrap;justify-content:center;">
+              <div style="border:1px solid rgba(74,222,128,0.4);border-radius:6px;padding:8px 16px;color:var(--green);text-align:center;">Tomcat-A<br><span style="font-size:10px;color:var(--text-dim);">↕ 讀/寫 Session</span></div>
+              <div style="border:1px solid rgba(74,222,128,0.4);border-radius:6px;padding:8px 16px;color:var(--green);text-align:center;">Tomcat-B<br><span style="font-size:10px;color:var(--text-dim);">↕ 讀/寫 Session</span></div>
+            </div>
+            <div style="color:var(--text-muted);">↕</div>
+            <div style="border:2px solid rgba(248,113,113,0.5);border-radius:6px;padding:8px 24px;color:var(--red);font-weight:700;">Redis（Session 集中儲存）</div>
+          </div>
+          <div style="border-top:1px solid var(--border);margin-top:14px;padding-top:12px;color:var(--text-dim);font-size:11px;line-height:2;">
+            ✅ 不管哪台 Tomcat 回應，都從 Redis 取 Session<br>
+            ✅ 任何一台 Tomcat 掛了，Session 不會消失
+          </div>
+        </div>
+        <h3>Spring Boot 設定 Redis Session</h3>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">pom.xml</span></div>
+          <div class="terminal-body"><span class="s-key">&lt;dependency&gt;</span>
+    &lt;groupId&gt;org.springframework.session&lt;/groupId&gt;
+    &lt;artifactId&gt;<span class="s-arg">spring-session-data-redis</span>&lt;/artifactId&gt;
+<span class="s-key">&lt;/dependency&gt;</span>
+<span class="s-key">&lt;dependency&gt;</span>
+    &lt;groupId&gt;org.springframework.boot&lt;/groupId&gt;
+    &lt;artifactId&gt;spring-boot-starter-data-redis&lt;/artifactId&gt;
+<span class="s-key">&lt;/dependency&gt;</span></div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">application.properties</span></div>
+          <div class="terminal-body"><span class="s-key">spring.session.store-type</span>=redis
+<span class="s-key">spring.data.redis.host</span>=<span class="s-arg">192.168.50.133</span>
+<span class="s-key">spring.data.redis.port</span>=<span class="s-arg">6379</span>
+<span class="s-key">server.servlet.session.timeout</span>=<span class="s-arg">30m</span></div>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body">加上 <code>@EnableRedisHttpSession</code> annotation 在主 class 上，就完成了！</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>Nginx 負載均衡完整設定</h2><span class="header-tag tag-blue">設定</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">/etc/nginx/sites-available/myapp</span></div>
+          <div class="terminal-body"><span class="s-key">upstream</span> <span class="s-arg">tomcat_pool</span> {
+    <span class="s-comment"># 輪詢（預設），搭配 weight 可加權</span>
+    server <span class="s-arg">192.168.50.131:8080</span> <span class="s-flag">weight=2</span>;  <span class="s-comment"># 這台效能好，多分流</span>
+    server <span class="s-arg">192.168.50.132:8080</span> <span class="s-flag">weight=1</span>;
+    server <span class="s-arg">192.168.50.133:8080</span> <span class="s-flag">backup</span>;    <span class="s-comment"># 備援，正常不用</span>
+
+    <span class="s-comment"># 健康檢查：連不上超過 3 次排除 30 秒</span>
+    <span class="s-flag">max_fails=3 fail_timeout=30s</span>;
+}
+
+<span class="s-key">server {</span>
+    listen <span class="s-arg">443 ssl</span>;
+    ...
+
+    location / {
+        proxy_pass <span class="s-arg">http://tomcat_pool</span>;
+        <span class="s-comment"># 把真實 IP 傳給後端</span>
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+    }
+<span class="s-key">}</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>

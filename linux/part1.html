@@ -1,0 +1,1421 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Linux 基礎指令詳解</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:ital,wght@0,400;0,700;1,400&family=Noto+Sans+TC:wght@300;400;500;700&display=swap');
+
+:root {
+  --bg: #0a0e13;
+  --surface: #111720;
+  --surface2: #1a2233;
+  --surface3: #202c40;
+  --border: #243044;
+  --border2: #2e3d55;
+  --green: #4ade80;
+  --green-dim: #14281e;
+  --blue: #60a5fa;
+  --blue-dim: #102040;
+  --yellow: #fbbf24;
+  --yellow-dim: #2a1e08;
+  --red: #f87171;
+  --red-dim: #2a1010;
+  --purple: #c084fc;
+  --cyan: #22d3ee;
+  --orange: #fb923c;
+  --text: #cbd5e1;
+  --text-dim: #64748b;
+  --text-muted: #475569;
+  --text-bright: #f1f5f9;
+}
+
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  font-family: 'Noto Sans TC', sans-serif;
+  font-size: 14px;
+  line-height: 1.75;
+}
+
+/* === LAYOUT === */
+.layout { display: flex; min-height: 100vh; }
+
+/* === SIDEBAR === */
+.sidebar {
+  width: 280px;
+  background: var(--surface);
+  border-right: 1px solid var(--border);
+  position: fixed;
+  top: 0; left: 0; bottom: 0;
+  overflow-y: auto;
+  z-index: 200;
+  scrollbar-width: thin;
+  scrollbar-color: var(--border2) transparent;
+}
+
+.sidebar-logo {
+  padding: 22px 20px 18px;
+  border-bottom: 1px solid var(--border);
+}
+
+.sidebar-logo .title {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 2px;
+  color: var(--green);
+  text-transform: uppercase;
+}
+
+.sidebar-logo .subtitle {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-top: 4px;
+}
+
+.nav-group { margin: 6px 0; }
+
+.nav-group-label {
+  padding: 10px 20px 4px;
+  font-size: 10px;
+  letter-spacing: 2px;
+  text-transform: uppercase;
+  color: var(--text-muted);
+  font-weight: 700;
+}
+
+.nav-link {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 9px 20px;
+  cursor: pointer;
+  color: var(--text-dim);
+  font-size: 13px;
+  transition: all 0.15s;
+  border-left: 3px solid transparent;
+}
+
+.nav-link:hover {
+  background: var(--surface2);
+  color: var(--text);
+}
+
+.nav-link.active {
+  background: linear-gradient(90deg, rgba(74,222,128,0.08), transparent);
+  border-left-color: var(--green);
+  color: var(--green);
+  font-weight: 500;
+}
+
+.nav-link .nav-icon { font-size: 15px; width: 20px; text-align: center; }
+.nav-link .nav-badge {
+  margin-left: auto;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  background: var(--surface3);
+  color: var(--text-dim);
+  padding: 1px 6px;
+  border-radius: 10px;
+}
+
+/* === MAIN === */
+.main {
+  margin-left: 280px;
+  flex: 1;
+  min-height: 100vh;
+}
+
+/* === SECTIONS === */
+.section {
+  display: none;
+  padding: 0;
+  animation: fadeSlide 0.25s ease;
+}
+
+.section.active { display: block; }
+
+@keyframes fadeSlide {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Section Hero */
+.section-hero {
+  padding: 40px 48px 32px;
+  background: linear-gradient(135deg, var(--surface) 0%, var(--bg) 100%);
+  border-bottom: 1px solid var(--border);
+  position: relative;
+  overflow: hidden;
+}
+
+.section-hero::before {
+  content: attr(data-icon);
+  position: absolute;
+  right: 48px;
+  top: 50%;
+  transform: translateY(-50%);
+  font-size: 80px;
+  opacity: 0.06;
+  pointer-events: none;
+}
+
+.section-hero h1 {
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--text-bright);
+  margin-bottom: 8px;
+}
+
+.section-hero .tags { display: flex; gap: 8px; flex-wrap: wrap; margin-bottom: 12px; }
+
+.tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  padding: 3px 10px;
+  border-radius: 20px;
+  font-weight: 400;
+}
+
+.tag-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(74,222,128,0.2); }
+.tag-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(96,165,250,0.2); }
+.tag-yellow { background: var(--yellow-dim); color: var(--yellow); border: 1px solid rgba(251,191,36,0.2); }
+.tag-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(248,113,113,0.2); }
+
+.section-hero .desc {
+  color: var(--text-dim);
+  font-size: 14px;
+  max-width: 600px;
+}
+
+/* Section content area */
+.section-body { padding: 32px 48px; }
+
+/* === CARDS === */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 24px;
+  overflow: hidden;
+}
+
+.card-header {
+  padding: 14px 20px;
+  background: var(--surface2);
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.card-header h2 {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-bright);
+  flex: 1;
+}
+
+.card-header .header-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 4px;
+}
+
+.card-body { padding: 20px; }
+
+/* === TERMINAL === */
+.terminal {
+  background: #060a0f;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  margin: 14px 0;
+  overflow: hidden;
+}
+
+.terminal-titlebar {
+  background: var(--surface2);
+  padding: 8px 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 1px solid var(--border);
+}
+
+.dot { width: 11px; height: 11px; border-radius: 50%; }
+.dot-r { background: #ef4444; }
+.dot-y { background: #f59e0b; }
+.dot-g { background: #22c55e; }
+
+.terminal-titlebar .tbar-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--text-dim);
+  margin-left: 6px;
+}
+
+.terminal-body {
+  padding: 16px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12.5px;
+  line-height: 2;
+  white-space: pre;
+  overflow-x: auto;
+}
+
+/* Syntax colors */
+.s-prompt { color: var(--green); }
+.s-cmd { color: var(--text-bright); font-weight: 700; }
+.s-flag { color: var(--blue); }
+.s-arg { color: var(--yellow); }
+.s-str { color: var(--orange); }
+.s-comment { color: var(--text-muted); font-style: italic; }
+.s-out { color: #4a5568; }
+.s-out-hi { color: var(--cyan); }
+.s-path { color: var(--purple); }
+.s-key { color: var(--green); }
+.s-val { color: var(--orange); }
+.s-err { color: var(--red); }
+
+/* === GRID === */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; margin-bottom: 24px; }
+
+/* === TABLE === */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  text-align: left;
+  padding: 9px 14px;
+  background: var(--surface2);
+  color: var(--text-dim);
+  font-size: 11px;
+  letter-spacing: 0.8px;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+.data-table td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+.data-table tr:last-child td { border-bottom: none; }
+.data-table tr:hover td { background: rgba(255,255,255,0.015); }
+
+/* === CALLOUTS === */
+.callout {
+  border-radius: 7px;
+  padding: 13px 16px;
+  margin: 14px 0;
+  display: flex;
+  gap: 12px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+.callout-icon { font-size: 17px; flex-shrink: 0; margin-top: 1px; }
+.callout-body { flex: 1; }
+.callout-body strong { display: block; margin-bottom: 3px; }
+.callout.tip { background: #0a1f12; border: 1px solid rgba(74,222,128,0.25); }
+.callout.info { background: #0a1525; border: 1px solid rgba(96,165,250,0.25); }
+.callout.warn { background: #1a1505; border: 1px solid rgba(251,191,36,0.25); }
+.callout.danger { background: #1a0a0a; border: 1px solid rgba(248,113,113,0.25); }
+
+/* === STEPS === */
+.steps { margin: 14px 0; }
+.step {
+  display: flex;
+  gap: 16px;
+  margin-bottom: 20px;
+  position: relative;
+}
+.step:not(:last-child)::after {
+  content: '';
+  position: absolute;
+  left: 13px;
+  top: 30px;
+  bottom: -4px;
+  width: 2px;
+  background: var(--border);
+}
+.step-num {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--green-dim);
+  border: 2px solid var(--green);
+  color: var(--green);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 1;
+}
+.step-content { flex: 1; padding-top: 2px; }
+.step-title { font-weight: 700; color: var(--text-bright); margin-bottom: 6px; font-size: 14px; }
+.step-desc { color: var(--text-dim); font-size: 13px; margin-bottom: 8px; }
+
+/* === DIAGRAM === */
+.diagram {
+  background: #060a0f;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 20px 24px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  line-height: 1.9;
+  margin: 14px 0;
+  overflow-x: auto;
+  white-space: pre-wrap;
+  word-break: break-word;
+}
+
+/* === INLINE CODE === */
+code {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  background: rgba(96,165,250,0.1);
+  color: var(--cyan);
+  padding: 1px 6px;
+  border-radius: 4px;
+  border: 1px solid rgba(96,165,250,0.15);
+}
+
+/* === PERMISSION BOX === */
+.perm-box {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 14px;
+  background: #060a0f;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px 20px;
+  margin: 14px 0;
+  line-height: 2.2;
+}
+
+/* === VI KEYBOARD === */
+.key-grid { display: flex; flex-wrap: wrap; gap: 8px; margin: 12px 0; }
+.key {
+  background: var(--surface2);
+  border: 1px solid var(--border2);
+  border-bottom: 3px solid var(--border2);
+  border-radius: 6px;
+  padding: 5px 10px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--text-bright);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-width: 50px;
+  cursor: default;
+  transition: all 0.1s;
+}
+.key:hover { border-bottom-width: 1px; transform: translateY(2px); }
+.key .key-label { font-size: 9px; color: var(--text-dim); margin-top: 2px; }
+
+p { margin-bottom: 10px; }
+ul { padding-left: 20px; margin-bottom: 10px; }
+li { margin-bottom: 5px; }
+strong { color: var(--text-bright); }
+h3 { font-size: 14px; font-weight: 700; color: var(--text-bright); margin: 16px 0 8px; }
+</style>
+</head>
+<body>
+<div class="layout">
+
+<!-- ====== SIDEBAR ====== -->
+<aside class="sidebar">
+  <div class="sidebar-logo">
+    <div class="title">📘 Part 1</div>
+    <div class="subtitle">Linux 基礎指令詳解</div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">壓縮 / 解壓縮</div>
+    <div class="nav-link active" onclick="show('cat')">
+      <span class="nav-icon">📄</span> cat / zcat
+      <span class="nav-badge">讀檔</span>
+    </div>
+    <div class="nav-link" onclick="show('zip')">
+      <span class="nav-icon">📦</span> zip / unzip
+      <span class="nav-badge">.zip</span>
+    </div>
+    <div class="nav-link" onclick="show('tar')">
+      <span class="nav-icon">🗜️</span> tar
+      <span class="nav-badge">.tar.gz</span>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">搜尋</div>
+    <div class="nav-link" onclick="show('grep')">
+      <span class="nav-icon">🔍</span> grep / zgrep
+      <span class="nav-badge">文字過濾</span>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">目錄操作</div>
+    <div class="nav-link" onclick="show('ls')">
+      <span class="nav-icon">📋</span> ls 完整說明
+      <span class="nav-badge">列目錄</span>
+    </div>
+    <div class="nav-link" onclick="show('perm')">
+      <span class="nav-icon">🔑</span> 權限管理 chmod
+      <span class="nav-badge">rwx</span>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">編輯器</div>
+    <div class="nav-link" onclick="show('vi')">
+      <span class="nav-icon">✏️</span> vi / vim 詳解
+      <span class="nav-badge">全面</span>
+    </div>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">常用技巧</div>
+    <div class="nav-link" onclick="show('pipe')">
+      <span class="nav-icon">🔗</span> pipe 管線 &amp; 重導向
+    </div>
+    <div class="nav-link" onclick="show('process')">
+      <span class="nav-icon">⚙️</span> 程序管理 ps / kill
+    </div>
+    <div class="nav-link" onclick="show('network')">
+      <span class="nav-icon">🌐</span> 網路指令 netstat
+    </div>
+  </div>
+
+  <div style="padding: 20px; border-top: 1px solid var(--border); margin-top: 12px;">
+    <div style="font-size:11px; color:var(--text-muted);">📗 環境建置篇</div>
+    <div style="font-size:12px; color:var(--text-dim); margin-top:4px;">請開啟 Part 2 檔案</div>
+  </div>
+</aside>
+
+<!-- ====== MAIN ====== -->
+<main class="main">
+
+<!-- ===== CAT / ZCAT ===== -->
+<div class="section active" id="cat">
+  <div class="section-hero" data-icon="📄">
+    <h1>cat / zcat — 讀取檔案內容</h1>
+    <div class="tags">
+      <span class="tag tag-green">基礎指令</span>
+      <span class="tag tag-blue">log 分析常用</span>
+    </div>
+    <div class="desc">cat 是 Linux 最基本的讀檔工具；zcat 是它的壓縮版，可以直接讀 .gz 檔案，在看舊 log 時非常實用。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header">
+        <h2>cat 完整用法</h2>
+        <span class="header-tag tag-green">cat</span>
+      </div>
+      <div class="card-body">
+        <p><strong>cat</strong> = concatenate（串接），本來是用來把多個檔案合併輸出，但最常用來「看檔案內容」。</p>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — 基本用法</span></div>
+          <div class="terminal-body"><span class="s-comment"># 1. 最基本：顯示檔案內容</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cat</span> <span class="s-path">/etc/hostname</span>
+<span class="s-out">ubuntu-server</span>
+
+<span class="s-comment"># 2. -n 顯示行號（debug 很好用）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cat</span> <span class="s-flag">-n</span> <span class="s-path">server.xml</span>
+<span class="s-out">     1	&lt;?xml version="1.0" encoding="UTF-8"?&gt;</span>
+<span class="s-out">     2	&lt;Server port="8005" shutdown="SHUTDOWN"&gt;</span>
+
+<span class="s-comment"># 3. -A 顯示特殊字元（找換行問題）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cat</span> <span class="s-flag">-A</span> <span class="s-path">config.txt</span>
+<span class="s-out">key=value$      ← $ 代表正常換行(\n)</span>
+<span class="s-out">key2=val2^M$    ← ^M 代表 Windows 換行(\r\n)，會造成 Linux 問題！</span>
+
+<span class="s-comment"># 4. 合併多個檔案</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cat</span> <span class="s-path">file1.txt file2.txt</span> <span class="s-flag">&gt;</span> <span class="s-path">combined.txt</span>
+
+<span class="s-comment"># 5. 建立簡單檔案（Ctrl+D 結束）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cat</span> <span class="s-flag">&gt;</span> <span class="s-path">memo.txt</span>
+<span class="s-out">這是我打的內容</span>
+<span class="s-out">^D（Ctrl+D 送出）</span></div>
+        </div>
+
+        <h3>🔍 cat vs less vs tail — 怎麼選？</h3>
+        <table class="data-table">
+          <tr><th>情況</th><th>用什麼</th><th>原因</th></tr>
+          <tr><td>檔案很小，想全看</td><td><code>cat</code></td><td>一次輸出全部</td></tr>
+          <tr><td>檔案很大，要上下捲動</td><td><code>less</code></td><td>分頁顯示，q 離開</td></tr>
+          <tr><td>看最後幾行 log</td><td><code>tail -n 50</code></td><td>只顯示最後 N 行</td></tr>
+          <tr><td>即時監看 log</td><td><code>tail -f</code></td><td>持續追蹤新增內容</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <h2>zcat — 直接讀壓縮檔</h2>
+        <span class="header-tag tag-blue">zcat</span>
+      </div>
+      <div class="card-body">
+        <p>Linux 的 log rotation 會自動把舊 log 壓縮成 <code>.gz</code>，<strong>zcat</strong> 可以直接讀取，不用先 gunzip 解壓。</p>
+
+        <div class="callout info">
+          <span class="callout-icon">ℹ️</span>
+          <div class="callout-body">
+            <strong>Log Rotation 是什麼？</strong>
+            系統每天會把 <code>syslog</code> → <code>syslog.1</code> → <code>syslog.2.gz</code> → 自動刪除。
+            你要查 3 天前的 log 就需要 zcat 來讀 .gz 檔。
+          </div>
+        </div>
+
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — zcat 用法</span></div>
+          <div class="terminal-body"><span class="s-comment"># 直接讀 .gz 檔</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zcat</span> <span class="s-path">/var/log/syslog.2.gz</span>
+
+<span class="s-comment"># 搭配 grep 篩選關鍵字（最實用）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zcat</span> <span class="s-path">/var/log/syslog.2.gz</span> | <span class="s-cmd">grep</span> <span class="s-str">"ERROR"</span>
+
+<span class="s-comment"># 搭配 less 分頁閱讀</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zcat</span> <span class="s-path">app.log.gz</span> | <span class="s-cmd">less</span>
+
+<span class="s-comment"># 查所有壓縮 log 的 ERROR（*萬用字元）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zcat</span> <span class="s-path">/var/log/syslog.*.gz</span> | <span class="s-cmd">grep</span> <span class="s-str">"Failed"</span>
+
+<span class="s-comment"># 顯示行數（解壓後有多少行）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zcat</span> <span class="s-path">big.log.gz</span> | <span class="s-cmd">wc</span> <span class="s-flag">-l</span>
+<span class="s-out">48320</span></div>
+        </div>
+
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body">
+            <strong>同族指令</strong>：zcat / zgrep / zless / zmore — 都是對應普通版本，但能直接吃 .gz
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== ZIP ===== -->
+<div class="section" id="zip">
+  <div class="section-hero" data-icon="📦">
+    <h1>zip / unzip — Windows 通用格式</h1>
+    <div class="tags">
+      <span class="tag tag-green">壓縮</span>
+      <span class="tag tag-blue">跨平台</span>
+    </div>
+    <div class="desc">.zip 是 Windows / Mac / Linux 都支援的格式，跟別人交換檔案或上傳到 Windows 伺服器時很常用。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>zip 壓縮</h2><span class="header-tag tag-green">壓縮</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment"># 壓縮單一檔案</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zip</span> <span class="s-arg">output.zip</span> <span class="s-path">myfile.txt</span>
+
+<span class="s-comment"># -r 壓縮整個目錄（recursive，必要！）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zip</span> <span class="s-flag">-r</span> <span class="s-arg">myapp.zip</span> <span class="s-path">mydir/</span>
+
+<span class="s-comment"># -9 最高壓縮率（慢），-1 最快（大）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zip</span> <span class="s-flag">-r -9</span> <span class="s-arg">myapp.zip</span> <span class="s-path">mydir/</span>
+
+<span class="s-comment"># -e 加密（會要求輸入密碼）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zip</span> <span class="s-flag">-r -e</span> <span class="s-arg">secret.zip</span> <span class="s-path">mydir/</span>
+
+<span class="s-comment"># 排除特定檔案（不打包 .class 和 node_modules）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zip</span> <span class="s-flag">-r</span> <span class="s-arg">myapp.zip</span> <span class="s-path">mydir/</span> <span class="s-flag">-x</span> <span class="s-str">"*.class"</span> <span class="s-flag">-x</span> <span class="s-str">"*/node_modules/*"</span>
+
+<span class="s-comment"># 查看 zip 內容（不解壓）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zip</span> <span class="s-flag">-sf</span> <span class="s-arg">myapp.zip</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>unzip 解壓縮</h2><span class="header-tag tag-blue">解壓</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment"># 解壓到目前目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">unzip</span> <span class="s-arg">myapp.zip</span>
+
+<span class="s-comment"># -d 指定目的目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">unzip</span> <span class="s-arg">myapp.zip</span> <span class="s-flag">-d</span> <span class="s-path">/opt/myapp</span>
+
+<span class="s-comment"># -l 列出內容（不解壓）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">unzip</span> <span class="s-flag">-l</span> <span class="s-arg">myapp.zip</span>
+<span class="s-out">  Length      Date    Time    Name</span>
+<span class="s-out">---------  ---------- -----   ----</span>
+<span class="s-out">    10240  2024-04-16 09:00   mydir/app.jar</span>
+
+<span class="s-comment"># -o 強制覆蓋（不問確認）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">unzip</span> <span class="s-flag">-o</span> <span class="s-arg">myapp.zip</span> <span class="s-flag">-d</span> <span class="s-path">/opt/myapp</span>
+
+<span class="s-comment"># 解壓時中文亂碼？Windows zip 常見問題</span>
+<span class="s-prompt">$</span> <span class="s-cmd">unzip</span> <span class="s-flag">-O</span> <span class="s-str">CP950</span> <span class="s-arg">windows.zip</span></div>
+        </div>
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body">
+            <strong>中文亂碼</strong>：Windows 的 zip 用 CP950 編碼，在 Linux 解壓會亂碼，加 <code>-O CP950</code> 可解決
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== TAR ===== -->
+<div class="section" id="tar">
+  <div class="section-hero" data-icon="🗜️">
+    <h1>tar — Linux 標準打包工具</h1>
+    <div class="tags">
+      <span class="tag tag-green">.tar.gz</span>
+      <span class="tag tag-blue">Linux 標準</span>
+    </div>
+    <div class="desc">tar 是 Linux 最常見的打包方式，搭配 gzip（-z）變成 .tar.gz，同時打包多個檔案並壓縮。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>tar 參數完整解說</h2><span class="header-tag tag-green">參數</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th>參數</th><th>全名</th><th>說明</th></tr>
+          <tr><td><code>-c</code></td><td>Create</td><td>建立新的壓縮檔</td></tr>
+          <tr><td><code>-x</code></td><td>eXtract</td><td>解壓縮</td></tr>
+          <tr><td><code>-t</code></td><td>lisT</td><td>列出壓縮檔內容（不解壓）</td></tr>
+          <tr><td><code>-z</code></td><td>gZip</td><td>透過 gzip 壓縮，產生 .gz</td></tr>
+          <tr><td><code>-j</code></td><td>bzip2</td><td>透過 bzip2 壓縮，更小但更慢</td></tr>
+          <tr><td><code>-v</code></td><td>Verbose</td><td>顯示處理過程（每個檔名）</td></tr>
+          <tr><td><code>-f</code></td><td>File</td><td>指定檔名，<strong>必須放最後</strong></td></tr>
+          <tr><td><code>-C</code></td><td>Change dir</td><td>指定解壓目錄</td></tr>
+          <tr><td><code>-p</code></td><td>Preserve</td><td>保留原始權限</td></tr>
+          <tr><td><code>--exclude</code></td><td>—</td><td>排除特定檔案</td></tr>
+        </table>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>記憶口訣</strong>：壓縮 = <strong>c</strong>reate <strong>z</strong>ip <strong>v</strong>erbose <strong>f</strong>ile → <code>czvf</code>；解壓把 c 換 x → <code>xzvf</code></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>常用操作範例</h2><span class="header-tag tag-blue">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## ─── 壓縮 ───────────────────────────────</span>
+
+<span class="s-comment"># 打包目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tar</span> <span class="s-flag">-czvf</span> <span class="s-arg">myapp.tar.gz</span> <span class="s-path">mydir/</span>
+
+<span class="s-comment"># 打包多個目錄/檔案</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tar</span> <span class="s-flag">-czvf</span> <span class="s-arg">backup.tar.gz</span> <span class="s-path">/etc/nginx /var/log/nginx</span>
+
+<span class="s-comment"># 排除特定目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tar</span> <span class="s-flag">-czvf</span> <span class="s-arg">myapp.tar.gz</span> <span class="s-path">mydir/</span> <span class="s-flag">--exclude=</span><span class="s-str">"mydir/node_modules"</span>
+
+<span class="s-comment">## ─── 解壓縮 ──────────────────────────────</span>
+
+<span class="s-comment"># 解壓到當前目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tar</span> <span class="s-flag">-xzvf</span> <span class="s-arg">myapp.tar.gz</span>
+
+<span class="s-comment"># 解壓到指定目錄（目錄要先存在）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tar</span> <span class="s-flag">-xzvf</span> <span class="s-arg">myapp.tar.gz</span> <span class="s-flag">-C</span> <span class="s-path">/opt/deploy</span>
+
+<span class="s-comment">## ─── 查看內容（不解壓）──────────────────</span>
+
+<span class="s-prompt">$</span> <span class="s-cmd">tar</span> <span class="s-flag">-tzvf</span> <span class="s-arg">myapp.tar.gz</span>
+<span class="s-out">drwxr-xr-x tomcat/tomcat  0 2024-04-16 09:00 mydir/</span>
+<span class="s-out">-rw-r--r-- tomcat/tomcat  52428800 2024-04-16 09:00 mydir/app.jar</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>副檔名對照表</h2><span class="header-tag tag-yellow">參考</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th>副檔名</th><th>指令</th><th>說明</th></tr>
+          <tr><td><code>.tar</code></td><td>tar -cvf / -xvf</td><td>只打包，不壓縮</td></tr>
+          <tr><td><code>.tar.gz</code> 或 <code>.tgz</code></td><td>tar -czvf / -xzvf</td><td>打包 + gzip 壓縮（最常用）</td></tr>
+          <tr><td><code>.tar.bz2</code></td><td>tar -cjvf / -xjvf</td><td>打包 + bzip2（更小但更慢）</td></tr>
+          <tr><td><code>.tar.xz</code></td><td>tar -cJvf / -xJvf</td><td>打包 + xz（最小，最慢）</td></tr>
+          <tr><td><code>.gz</code></td><td>gzip / gunzip</td><td>單檔 gzip（不打包）</td></tr>
+          <tr><td><code>.zip</code></td><td>zip -r / unzip</td><td>Windows 通用格式</td></tr>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== GREP ===== -->
+<div class="section" id="grep">
+  <div class="section-hero" data-icon="🔍">
+    <h1>grep / zgrep — 文字搜尋神器</h1>
+    <div class="tags">
+      <span class="tag tag-green">必學指令</span>
+      <span class="tag tag-blue">log 分析</span>
+      <span class="tag tag-yellow">正則表達式</span>
+    </div>
+    <div class="desc">grep 是 Linux 最重要的文字過濾工具，任何 log 分析、設定查找都離不開它。搭配 pipe 使用威力倍增。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>grep 常用選項速查</h2><span class="header-tag tag-green">指令</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th>選項</th><th>說明</th><th>範例</th></tr>
+          <tr><td><code>-i</code></td><td>忽略大小寫</td><td><code>grep -i "error" app.log</code></td></tr>
+          <tr><td><code>-n</code></td><td>顯示行號</td><td><code>grep -n "Exception" app.log</code></td></tr>
+          <tr><td><code>-r</code></td><td>遞迴搜尋目錄</td><td><code>grep -r "TODO" src/</code></td></tr>
+          <tr><td><code>-l</code></td><td>只顯示檔名（不顯示內容）</td><td><code>grep -rl "ERROR" logs/</code></td></tr>
+          <tr><td><code>-c</code></td><td>計算匹配行數</td><td><code>grep -c "ERROR" app.log</code></td></tr>
+          <tr><td><code>-v</code></td><td>反向（不包含）</td><td><code>grep -v "DEBUG" app.log</code></td></tr>
+          <tr><td><code>-A N</code></td><td>顯示匹配後 N 行</td><td><code>grep -A 5 "ERROR" app.log</code></td></tr>
+          <tr><td><code>-B N</code></td><td>顯示匹配前 N 行</td><td><code>grep -B 5 "ERROR" app.log</code></td></tr>
+          <tr><td><code>-C N</code></td><td>顯示前後各 N 行</td><td><code>grep -C 3 "ERROR" app.log</code></td></tr>
+          <tr><td><code>-E</code></td><td>使用正則表達式</td><td><code>grep -E "ERROR|WARN" app.log</code></td></tr>
+          <tr><td><code>-w</code></td><td>完整單字匹配</td><td><code>grep -w "ERROR" app.log</code></td></tr>
+          <tr><td><code>--color</code></td><td>關鍵字高亮顯示</td><td><code>grep --color "ERROR" app.log</code></td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>實戰場景範例</h2><span class="header-tag tag-blue">實戰</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — 常見使用情境</span></div>
+          <div class="terminal-body"><span class="s-comment">## 場景1：查 Spring Boot log 的 ERROR</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-flag">-n</span> <span class="s-str">"ERROR"</span> <span class="s-path">catalina.out</span>
+<span class="s-out">1234:2024-04-16 09:12:33 ERROR c.e.MyService - NullPointerException</span>
+
+<span class="s-comment">## 場景2：看 ERROR 前後 5 行（找上下文）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-flag">-C 5</span> <span class="s-str">"NullPointerException"</span> <span class="s-path">catalina.out</span>
+
+<span class="s-comment">## 場景3：即時監看 log 同時過濾</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tail</span> <span class="s-flag">-f</span> <span class="s-path">catalina.out</span> | <span class="s-cmd">grep</span> <span class="s-flag">--color</span> <span class="s-str">"ERROR\|WARN"</span>
+
+<span class="s-comment">## 場景4：排除不重要的 log</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cat</span> <span class="s-path">catalina.out</span> | <span class="s-cmd">grep</span> <span class="s-flag">-v</span> <span class="s-str">"DEBUG"</span> | <span class="s-cmd">grep</span> <span class="s-flag">-v</span> <span class="s-str">"INFO"</span>
+
+<span class="s-comment">## 場景5：統計今天有幾個 ERROR</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-flag">-c</span> <span class="s-str">"2024-04-16.*ERROR"</span> <span class="s-path">catalina.out</span>
+<span class="s-out">47</span>
+
+<span class="s-comment">## 場景6：搜尋設定檔中的 port 設定</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-flag">-r</span> <span class="s-str">"8080"</span> <span class="s-path">/etc/nginx/</span>
+
+<span class="s-comment">## 場景7：找哪些檔案包含某個字串</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-flag">-rl</span> <span class="s-str">"datasource.url"</span> <span class="s-path">/opt/myapp/config/</span>
+<span class="s-out">/opt/myapp/config/application.properties</span>
+
+<span class="s-comment">## 場景8：多個關鍵字（OR）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-flag">-E</span> <span class="s-str">"ERROR|Exception|OOM"</span> <span class="s-path">catalina.out</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>zgrep — 直接搜尋 .gz</h2><span class="header-tag tag-yellow">zgrep</span></div>
+      <div class="card-body">
+        <p>zgrep 的所有選項與 grep <strong>完全相同</strong>，差別只是它可以讀 <code>.gz</code> 格式。</p>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — zgrep</span></div>
+          <div class="terminal-body"><span class="s-comment"># 搜尋昨天的 log（已被壓縮）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zgrep</span> <span class="s-flag">-n</span> <span class="s-str">"ERROR"</span> <span class="s-path">/var/log/syslog.1.gz</span>
+
+<span class="s-comment"># 搜尋所有歷史壓縮 log</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zgrep</span> <span class="s-flag">-i</span> <span class="s-str">"OutOfMemory"</span> <span class="s-path">/var/log/syslog.*.gz</span>
+
+<span class="s-comment"># 同時搜尋當前 log 和舊壓縮 log</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span>  <span class="s-str">"ERROR"</span> <span class="s-path">catalina.out</span>
+<span class="s-prompt">$</span> <span class="s-cmd">zgrep</span> <span class="s-str">"ERROR"</span> <span class="s-path">catalina.out.*.gz</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== LS ===== -->
+<div class="section" id="ls">
+  <div class="section-hero" data-icon="📋">
+    <h1>ls — 目錄列表完整說明</h1>
+    <div class="tags">
+      <span class="tag tag-green">基礎指令</span>
+      <span class="tag tag-blue">最常用</span>
+    </div>
+    <div class="desc">ls 是最頻繁使用的指令，透過不同組合可以看到權限、大小、時間等關鍵資訊。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>ls -l 輸出欄位完整解析</h2><span class="header-tag tag-green">解析</span></div>
+      <div class="card-body">
+        <div class="perm-box"><span style="color:var(--cyan)">-</span><span style="color:var(--green)">rwx</span><span style="color:var(--blue)">r-x</span><span style="color:var(--yellow)">r-x</span>  <span style="color:var(--purple)">2</span>  <span style="color:var(--orange)">tomcat</span>  <span style="color:var(--orange)">tomcat</span>  <span style="color:var(--red)">50M</span>  <span style="color:var(--text-dim)">Apr 16 09:00</span>  <span style="color:var(--text-bright)">app.jar</span>
+
+<span style="color:var(--cyan)">①</span>        <span style="color:var(--green)">②</span>    <span style="color:var(--blue)">③</span>    <span style="color:var(--yellow)">④</span>    <span style="color:var(--purple)">⑤</span>    <span style="color:var(--orange)">⑥</span>       <span style="color:var(--orange)">⑦</span>     <span style="color:var(--red)">⑧</span>      <span style="color:var(--text-dim)">⑨</span>             <span style="color:var(--text-bright)">⑩</span>
+</div>
+        <table class="data-table">
+          <tr><th>①</th><td>檔案類型</td><td><code>-</code> 一般檔案，<code>d</code> 目錄，<code>l</code> 符號連結，<code>b</code> 區塊裝置，<code>c</code> 字元裝置</td></tr>
+          <tr><th><span style="color:var(--green)">②</span></th><td>擁有者權限</td><td><code>rwx</code> = 可讀+寫+執行</td></tr>
+          <tr><th><span style="color:var(--blue)">③</span></th><td>群組權限</td><td><code>r-x</code> = 可讀+不可寫+可執行</td></tr>
+          <tr><th><span style="color:var(--yellow)">④</span></th><td>其他人權限</td><td><code>r-x</code> = 可讀+不可寫+可執行</td></tr>
+          <tr><th><span style="color:var(--purple)">⑤</span></th><td>硬連結數</td><td>有幾個連結指向這個 inode</td></tr>
+          <tr><th><span style="color:var(--orange)">⑥</span></th><td>擁有者</td><td>哪個使用者擁有這個檔案</td></tr>
+          <tr><th><span style="color:var(--orange)">⑦</span></th><td>所屬群組</td><td>哪個群組擁有這個檔案</td></tr>
+          <tr><th><span style="color:var(--red)">⑧</span></th><td>大小</td><td>預設 bytes，加 <code>-h</code> 顯示 KB/MB/GB</td></tr>
+          <tr><th>⑨</th><td>修改時間</td><td>最後一次修改的時間</td></tr>
+          <tr><th>⑩</th><td>檔案名稱</td><td>—</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>常用選項組合</h2><span class="header-tag tag-blue">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment"># 基本列表</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span>
+<span class="s-out">bin  etc  home  opt  usr  var</span>
+
+<span class="s-comment"># -l 詳細資訊</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-l</span>
+
+<span class="s-comment"># -a 顯示隱藏檔（.開頭的）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-la</span>
+<span class="s-out">drwxr-xr-x  5 root root 4096 .          ← 當前目錄</span>
+<span class="s-out">drwxr-xr-x 20 root root 4096 ..         ← 上一層目錄</span>
+<span class="s-out">-rw-r--r--  1 root root  220 .bash_logout</span>
+<span class="s-out">-rw-r--r--  1 root root 3526 .bashrc</span>
+
+<span class="s-comment"># -h 人類可讀大小（KB/MB）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-lh</span>
+<span class="s-out">-rw-r--r-- 1 tomcat tomcat 50M Apr 16 09:00 app.jar</span>
+
+<span class="s-comment"># -t 按修改時間排序（最新在前）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-lt</span>
+
+<span class="s-comment"># -r 反向排序（最舊在前）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-ltr</span>
+
+<span class="s-comment"># 組合：全部顯示+詳細+大小+時間排序</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-lath</span>
+
+<span class="s-comment"># 指定目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-la</span> <span class="s-path">/opt/tomcat/logs/</span>
+
+<span class="s-comment"># 只列出目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-d</span> <span class="s-path">*/</span>
+
+<span class="s-comment"># 搭配 grep 找特定檔案</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-la</span> | <span class="s-cmd">grep</span> <span class="s-str">".jar"</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== CHMOD ===== -->
+<div class="section" id="perm">
+  <div class="section-hero" data-icon="🔑">
+    <h1>chmod / chown — 權限管理</h1>
+    <div class="tags">
+      <span class="tag tag-green">權限</span>
+      <span class="tag tag-yellow">重要</span>
+    </div>
+    <div class="desc">Linux 的權限系統是安全的基礎，弄錯權限是很多「Permission denied」錯誤的根源。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>rwx 數字對照</h2><span class="header-tag tag-green">概念</span></div>
+      <div class="card-body">
+        <div class="grid-3">
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--green);font-weight:700;">r</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Read 讀取</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">4</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--blue);font-weight:700;">w</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Write 寫入</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">2</div>
+          </div>
+          <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:16px;text-align:center;">
+            <div style="font-family:'JetBrains Mono',monospace;font-size:28px;color:var(--yellow);font-weight:700;">x</div>
+            <div style="font-size:12px;color:var(--text-dim);margin-top:4px;">Execute 執行</div>
+            <div style="font-family:'JetBrains Mono',monospace;font-size:24px;color:var(--text-bright);margin-top:8px;">1</div>
+          </div>
+        </div>
+        <table class="data-table">
+          <tr><th>數字</th><th>符號</th><th>意義</th></tr>
+          <tr><td><code>7</code></td><td>rwx</td><td>讀+寫+執行（4+2+1）</td></tr>
+          <tr><td><code>6</code></td><td>rw-</td><td>讀+寫（4+2）</td></tr>
+          <tr><td><code>5</code></td><td>r-x</td><td>讀+執行（4+1）</td></tr>
+          <tr><td><code>4</code></td><td>r--</td><td>只讀（4）</td></tr>
+          <tr><td><code>0</code></td><td>---</td><td>無權限</td></tr>
+        </table>
+        <p style="margin-top:12px;"><strong>三位數字</strong>依序代表：擁有者 / 群組 / 其他人</p>
+        <p>例如 <code>755</code> = 擁有者 rwx，群組和其他人 r-x</p>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>chmod / chown 常用指令</h2><span class="header-tag tag-blue">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## chmod — 改權限</span>
+
+<span class="s-comment"># 數字方式（最常用）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">chmod</span> <span class="s-arg">755</span> <span class="s-path">startup.sh</span>    <span class="s-comment"># rwxr-xr-x</span>
+<span class="s-prompt">$</span> <span class="s-cmd">chmod</span> <span class="s-arg">644</span> <span class="s-path">config.xml</span>   <span class="s-comment"># rw-r--r--</span>
+<span class="s-prompt">$</span> <span class="s-cmd">chmod</span> <span class="s-arg">600</span> <span class="s-path">secret.key</span>   <span class="s-comment"># rw------- (只有自己能讀寫)</span>
+
+<span class="s-comment"># 符號方式（+新增 -移除 =設定）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">chmod</span> <span class="s-arg">+x</span> <span class="s-path">startup.sh</span>    <span class="s-comment"># 所有人加執行權</span>
+<span class="s-prompt">$</span> <span class="s-cmd">chmod</span> <span class="s-arg">u+x</span> <span class="s-path">script.sh</span>   <span class="s-comment"># 只有擁有者加執行</span>
+<span class="s-prompt">$</span> <span class="s-cmd">chmod</span> <span class="s-arg">go-w</span> <span class="s-path">file.txt</span>   <span class="s-comment"># 群組和其他人移除寫入</span>
+
+<span class="s-comment"># -R 遞迴整個目錄</span>
+<span class="s-prompt">$</span> <span class="s-cmd">chmod</span> <span class="s-flag">-R</span> <span class="s-arg">755</span> <span class="s-path">/opt/tomcat</span>
+
+<span class="s-comment">## chown — 改擁有者</span>
+
+<span class="s-comment"># 改擁有者</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo chown</span> <span class="s-arg">tomcat</span> <span class="s-path">app.jar</span>
+
+<span class="s-comment"># 改擁有者和群組</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo chown</span> <span class="s-arg">tomcat:tomcat</span> <span class="s-path">app.jar</span>
+
+<span class="s-comment"># -R 遞迴</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo chown</span> <span class="s-flag">-R</span> <span class="s-arg">tomcat:tomcat</span> <span class="s-path">/opt/tomcat</span></div>
+        </div>
+        <div class="callout tip">
+          <span class="callout-icon">💡</span>
+          <div class="callout-body"><strong>常見情境</strong>：Tomcat 的 bin/*.sh 需要 <code>chmod +x</code> 才能執行；WAR 檔需要 <code>chown tomcat:tomcat</code> Tomcat 才能讀取。</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== VI ===== -->
+<div class="section" id="vi">
+  <div class="section-hero" data-icon="✏️">
+    <h1>vi / vim 詳細教學</h1>
+    <div class="tags">
+      <span class="tag tag-green">必學</span>
+      <span class="tag tag-blue">伺服器標配</span>
+    </div>
+    <div class="desc">伺服器上通常沒有 GUI，vi/vim 是唯一能用的文字編輯器。理解三種模式是關鍵。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>三種模式說明</h2><span class="header-tag tag-green">核心概念</span></div>
+      <div class="card-body">
+        <style>
+          .vi-diagram { background:#060a0f; border:1px solid var(--border); border-radius:8px; padding:24px 20px; margin:14px 0; font-family:'JetBrains Mono',monospace; font-size:12px; }
+          .vi-title { text-align:center; border:2px solid var(--green); color:var(--green); padding:8px 16px; border-radius:6px; margin-bottom:20px; letter-spacing:1px; }
+          .vi-top { display:flex; justify-content:center; margin-bottom:4px; }
+          .vi-box { border:2px solid; border-radius:6px; padding:10px 16px; text-align:center; min-width:150px; }
+          .vi-box-green { border-color:var(--green); color:var(--green); }
+          .vi-box-blue  { border-color:var(--blue);  color:var(--blue);  }
+          .vi-box-yellow{ border-color:var(--yellow);color:var(--yellow);}
+          .vi-box .vi-box-title { font-weight:700; font-size:13px; }
+          .vi-box .vi-box-sub   { font-size:11px; margin-top:4px; opacity:0.8; }
+          .vi-arrows { display:flex; justify-content:center; align-items:stretch; gap:0; margin:0; }
+          .vi-arrow-col { display:flex; flex-direction:column; align-items:center; gap:2px; padding:4px 8px; }
+          .vi-arrow-label { font-size:11px; color:var(--text-dim); }
+          .vi-arrow-line { color:var(--text-muted); font-size:16px; line-height:1; }
+          .vi-bottom { display:flex; justify-content:center; gap:32px; flex-wrap:wrap; }
+          .vi-note { font-size:11px; color:var(--text-dim); text-align:center; margin-top:4px; }
+        </style>
+        <div class="vi-diagram">
+          <div class="vi-title">vi 的三種模式</div>
+          <div class="vi-top">
+            <div>
+              <div class="vi-box vi-box-green">
+                <div class="vi-box-title">NORMAL 模式</div>
+                <div class="vi-box-sub">無法輸入文字<br>開啟 vi 預設進入這裡</div>
+              </div>
+            </div>
+          </div>
+          <div class="vi-arrows">
+            <div class="vi-arrow-col">
+              <div class="vi-arrow-label">i / a / o</div>
+              <div class="vi-arrow-line">↓</div>
+            </div>
+            <div style="width:60px"></div>
+            <div class="vi-arrow-col">
+              <div class="vi-arrow-label">Esc</div>
+              <div class="vi-arrow-line">↑</div>
+            </div>
+            <div style="width:60px"></div>
+            <div class="vi-arrow-col">
+              <div class="vi-arrow-label">:</div>
+              <div class="vi-arrow-line">↓</div>
+            </div>
+          </div>
+          <div class="vi-bottom">
+            <div>
+              <div class="vi-box vi-box-blue">
+                <div class="vi-box-title">INSERT 模式</div>
+                <div class="vi-box-sub">可以打字輸入</div>
+              </div>
+              <div class="vi-note">左下角顯示 <span style="color:var(--blue)">-- INSERT --</span></div>
+            </div>
+            <div>
+              <div class="vi-box vi-box-yellow">
+                <div class="vi-box-title">COMMAND 模式</div>
+                <div class="vi-box-sub">輸入 :wq :q! 等指令</div>
+              </div>
+              <div class="vi-note">從 NORMAL 按 <span style="color:var(--yellow)">:</span> 進入</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="callout warn">
+          <span class="callout-icon">⚠️</span>
+          <div class="callout-body"><strong>新手最常犯的錯</strong>：開啟 vi 後直接打字 → 沒反應或亂跳。要先按 <code>i</code> 進入 INSERT 模式再打字！</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>NORMAL 模式 — 移動與操作</h2><span class="header-tag tag-blue">NORMAL</span></div>
+      <div class="card-body">
+        <div class="grid-2">
+          <div>
+            <h3>游標移動</h3>
+            <table class="data-table">
+              <tr><th>按鍵</th><th>移動</th></tr>
+              <tr><td><code>h j k l</code></td><td>← ↓ ↑ →</td></tr>
+              <tr><td><code>w</code></td><td>跳到下個單字</td></tr>
+              <tr><td><code>b</code></td><td>跳到上個單字</td></tr>
+              <tr><td><code>0</code></td><td>行首</td></tr>
+              <tr><td><code>$</code></td><td>行尾</td></tr>
+              <tr><td><code>gg</code></td><td>第一行</td></tr>
+              <tr><td><code>G</code></td><td>最後一行</td></tr>
+              <tr><td><code>:50</code></td><td>跳到第 50 行</td></tr>
+              <tr><td><code>Ctrl+f</code></td><td>往下翻頁</td></tr>
+              <tr><td><code>Ctrl+b</code></td><td>往上翻頁</td></tr>
+            </table>
+          </div>
+          <div>
+            <h3>編輯操作</h3>
+            <table class="data-table">
+              <tr><th>按鍵</th><th>動作</th></tr>
+              <tr><td><code>dd</code></td><td>剪下（刪除）整行</td></tr>
+              <tr><td><code>3dd</code></td><td>刪除 3 行</td></tr>
+              <tr><td><code>yy</code></td><td>複製整行</td></tr>
+              <tr><td><code>5yy</code></td><td>複製 5 行</td></tr>
+              <tr><td><code>p</code></td><td>貼上（游標後）</td></tr>
+              <tr><td><code>P</code></td><td>貼上（游標前）</td></tr>
+              <tr><td><code>u</code></td><td>Undo 復原</td></tr>
+              <tr><td><code>Ctrl+r</code></td><td>Redo 重做</td></tr>
+              <tr><td><code>x</code></td><td>刪除游標字元</td></tr>
+              <tr><td><code>.</code></td><td>重複上一個動作</td></tr>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>INSERT 模式 — 進入方式</h2><span class="header-tag tag-blue">INSERT</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th>按鍵</th><th>進入 INSERT 的位置</th></tr>
+          <tr><td><code>i</code></td><td>游標前插入（最常用）</td></tr>
+          <tr><td><code>a</code></td><td>游標後插入</td></tr>
+          <tr><td><code>I</code></td><td>行首插入</td></tr>
+          <tr><td><code>A</code></td><td>行尾插入</td></tr>
+          <tr><td><code>o</code></td><td>在下方新增空行並插入</td></tr>
+          <tr><td><code>O</code></td><td>在上方新增空行並插入</td></tr>
+          <tr><td><code>Esc</code></td><td>離開 INSERT 回到 NORMAL</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>COMMAND 模式 — 指令列操作</h2><span class="header-tag tag-yellow">COMMAND</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">vim — command mode</span></div>
+          <div class="terminal-body"><span class="s-comment">## 存檔 / 離開</span>
+<span class="s-key">:w</span>          <span class="s-comment">存檔（不離開）</span>
+<span class="s-key">:q</span>          <span class="s-comment">離開（未修改）</span>
+<span class="s-key">:wq</span>         <span class="s-comment">存檔並離開 ✅</span>
+<span class="s-key">:wq!</span>        <span class="s-comment">強制存檔並離開</span>
+<span class="s-key">:q!</span>         <span class="s-comment">強制離開（放棄修改） ⚠️</span>
+<span class="s-key">:x</span>          <span class="s-comment">= :wq（有修改才存）</span>
+
+<span class="s-comment">## 搜尋</span>
+<span class="s-key">:/keyword</span>   <span class="s-comment">向下搜尋 keyword</span>
+<span class="s-key">:?keyword</span>   <span class="s-comment">向上搜尋</span>
+<span class="s-key">n</span>           <span class="s-comment">下一個搜尋結果</span>
+<span class="s-key">N</span>           <span class="s-comment">上一個搜尋結果</span>
+
+<span class="s-comment">## 取代（強大功能！）</span>
+<span class="s-key">:%s/old/new/g</span>     <span class="s-comment">全文取代 old → new</span>
+<span class="s-key">:%s/old/new/gc</span>    <span class="s-comment">取代前逐一確認</span>
+<span class="s-key">:5,10s/old/new/g</span>  <span class="s-comment">只取代第 5-10 行</span>
+
+<span class="s-comment">## 顯示設定</span>
+<span class="s-key">:set nu</span>     <span class="s-comment">顯示行號</span>
+<span class="s-key">:set nonu</span>   <span class="s-comment">隱藏行號</span>
+<span class="s-key">:set paste</span>  <span class="s-comment">貼上模式（避免自動縮排）</span>
+
+<span class="s-comment">## 多檔案</span>
+<span class="s-key">:e file.txt</span>  <span class="s-comment">開啟另一個檔案</span>
+<span class="s-key">:split</span>       <span class="s-comment">水平分割視窗</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>vi 實戰流程：修改 Tomcat port</h2><span class="header-tag tag-green">實戰</span></div>
+      <div class="card-body">
+        <div class="steps">
+          <div class="step">
+            <div class="step-num">1</div>
+            <div class="step-content">
+              <div class="step-title">開啟設定檔</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-prompt">$</span> <span class="s-cmd">sudo vi</span> <span class="s-path">/opt/tomcat/conf/server.xml</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">2</div>
+            <div class="step-content">
+              <div class="step-title">搜尋 8080</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-comment">在 NORMAL 模式輸入（不要先按 i）：</span>
+<span class="s-key">:/8080</span>
+<span class="s-out">游標會跳到含 "8080" 的那行</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">3</div>
+            <div class="step-content">
+              <div class="step-title">用取代指令一次改掉</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-key">:%s/8080/9090/g</span>
+<span class="s-out">把所有 8080 改成 9090</span></div></div>
+            </div>
+          </div>
+          <div class="step">
+            <div class="step-num">4</div>
+            <div class="step-content">
+              <div class="step-title">存檔離開</div>
+              <div class="terminal"><div class="terminal-body"><span class="s-key">:wq</span></div></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== PIPE ===== -->
+<div class="section" id="pipe">
+  <div class="section-hero" data-icon="🔗">
+    <h1>pipe 管線 &amp; 重導向</h1>
+    <div class="tags">
+      <span class="tag tag-green">進階技巧</span>
+      <span class="tag tag-blue">組合威力</span>
+    </div>
+    <div class="desc">pipe（|）是把多個指令串接起來的機制，重導向（&gt; &gt;&gt;）是控制輸出位置。兩者組合可以完成複雜任務。</div>
+  </div>
+  <div class="section-body">
+
+    <div class="card">
+      <div class="card-header"><h2>pipe | 管線</h2><span class="header-tag tag-green">pipe</span></div>
+      <div class="card-body">
+        <div style="background:#060a0f;border:1px solid var(--border);border-radius:8px;padding:20px;margin:14px 0;font-family:'JetBrains Mono',monospace;font-size:12px;">
+          <div style="color:var(--text-dim);margin-bottom:14px;">概念：把前一個指令的「輸出」，當成後一個指令的「輸入」</div>
+          <div style="display:flex;align-items:center;gap:0;flex-wrap:wrap;gap:4px;">
+            <div style="background:rgba(74,222,128,0.1);border:1px solid rgba(74,222,128,0.3);border-radius:5px;padding:8px 14px;color:var(--green);text-align:center;">
+              <div style="font-weight:700;">cat app.log</div>
+              <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">讀出所有內容</div>
+            </div>
+            <div style="color:var(--text-muted);font-size:18px;padding:0 4px;">|</div>
+            <div style="background:rgba(96,165,250,0.1);border:1px solid rgba(96,165,250,0.3);border-radius:5px;padding:8px 14px;color:var(--blue);text-align:center;">
+              <div style="font-weight:700;">grep "ERROR"</div>
+              <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">只留 ERROR 的行</div>
+            </div>
+            <div style="color:var(--text-muted);font-size:18px;padding:0 4px;">|</div>
+            <div style="background:rgba(251,191,36,0.1);border:1px solid rgba(251,191,36,0.3);border-radius:5px;padding:8px 14px;color:var(--yellow);text-align:center;">
+              <div style="font-weight:700;">wc -l</div>
+              <div style="font-size:10px;color:var(--text-dim);margin-top:3px;">計算有幾行</div>
+            </div>
+          </div>
+        </div>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash — pipe 實例</span></div>
+          <div class="terminal-body"><span class="s-comment"># 今天的 ERROR 有幾筆</span>
+<span class="s-prompt">$</span> <span class="s-cmd">cat</span> <span class="s-path">catalina.out</span> | <span class="s-cmd">grep</span> <span class="s-str">"ERROR"</span> | <span class="s-cmd">wc</span> <span class="s-flag">-l</span>
+<span class="s-out">47</span>
+
+<span class="s-comment"># 找最大的 10 個檔案</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ls</span> <span class="s-flag">-lh</span> | <span class="s-cmd">sort</span> <span class="s-flag">-k5 -rh</span> | <span class="s-cmd">head</span> <span class="s-flag">-10</span>
+
+<span class="s-comment"># 即時監看 log 並過濾</span>
+<span class="s-prompt">$</span> <span class="s-cmd">tail</span> <span class="s-flag">-f</span> <span class="s-path">catalina.out</span> | <span class="s-cmd">grep</span> <span class="s-flag">--color</span> <span class="s-str">"ERROR"</span>
+
+<span class="s-comment"># 看哪個 process 用最多 CPU</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ps</span> <span class="s-flag">aux</span> | <span class="s-cmd">sort</span> <span class="s-flag">-k3 -rn</span> | <span class="s-cmd">head</span> <span class="s-flag">-5</span></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header"><h2>重導向 &gt; &gt;&gt; 2&gt;</h2><span class="header-tag tag-blue">redirect</span></div>
+      <div class="card-body">
+        <table class="data-table">
+          <tr><th>符號</th><th>說明</th><th>範例</th></tr>
+          <tr><td><code>&gt;</code></td><td>輸出到檔案（覆蓋）</td><td><code>echo "hello" > file.txt</code></td></tr>
+          <tr><td><code>&gt;&gt;</code></td><td>輸出到檔案（追加）</td><td><code>echo "hello" >> file.txt</code></td></tr>
+          <tr><td><code>2&gt;</code></td><td>錯誤輸出到檔案</td><td><code>command 2> error.log</code></td></tr>
+          <tr><td><code>2&gt;&amp;1</code></td><td>錯誤和正常輸出合併</td><td><code>command > all.log 2>&1</code></td></tr>
+          <tr><td><code>&lt;</code></td><td>從檔案讀取輸入</td><td><code>mysql db < dump.sql</code></td></tr>
+        </table>
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span></div>
+          <div class="terminal-body"><span class="s-comment"># 把 log 中的 ERROR 存到另一個檔</span>
+<span class="s-prompt">$</span> <span class="s-cmd">grep</span> <span class="s-str">"ERROR"</span> <span class="s-path">catalina.out</span> <span class="s-flag">&gt;</span> <span class="s-path">errors.txt</span>
+
+<span class="s-comment"># 追加（不覆蓋）到 log</span>
+<span class="s-prompt">$</span> <span class="s-cmd">echo</span> <span class="s-str">"部署完成 $(date)"</span> <span class="s-flag">&gt;&gt;</span> <span class="s-path">deploy.log</span>
+
+<span class="s-comment"># 標準輸出和錯誤都存起來</span>
+<span class="s-prompt">$</span> <span class="s-cmd">java</span> <span class="s-flag">-jar</span> <span class="s-path">app.jar</span> <span class="s-flag">&gt;</span> <span class="s-path">app.log</span> <span class="s-flag">2&gt;&amp;1</span></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ===== PROCESS ===== -->
+<div class="section" id="process">
+  <div class="section-hero" data-icon="⚙️">
+    <h1>程序管理 — ps / kill / top</h1>
+    <div class="tags"><span class="tag tag-green">系統管理</span><span class="tag tag-blue">監控</span></div>
+    <div class="desc">查看和管理執行中的程序，是伺服器管理的基本功。</div>
+  </div>
+  <div class="section-body">
+    <div class="card">
+      <div class="card-header"><h2>常用程序指令</h2><span class="header-tag tag-green">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## ps — 查看程序</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ps</span> <span class="s-flag">aux</span>               <span class="s-comment">列出所有程序</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ps</span> <span class="s-flag">aux</span> | <span class="s-cmd">grep</span> <span class="s-str">java</span>  <span class="s-comment">找 Java（Tomcat）的 PID</span>
+<span class="s-out">tomcat  1234  25.0  12.0  /usr/bin/java -jar app.jar</span>
+<span class="s-out">  ↑      ↑     ↑     ↑</span>
+<span class="s-out"> USER   PID  CPU%  MEM%</span>
+
+<span class="s-comment">## top — 即時監看（q 離開）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">top</span>
+<span class="s-prompt">$</span> <span class="s-cmd">htop</span>               <span class="s-comment">更好用的版本（需安裝）</span>
+
+<span class="s-comment">## kill — 終止程序</span>
+<span class="s-prompt">$</span> <span class="s-cmd">kill</span> <span class="s-arg">1234</span>          <span class="s-comment">正常終止（SIGTERM）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">kill</span> <span class="s-flag">-9</span> <span class="s-arg">1234</span>      <span class="s-comment">強制終止（SIGKILL）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">pkill</span> <span class="s-arg">java</span>         <span class="s-comment">用名稱殺掉所有 java 程序</span>
+
+<span class="s-comment">## 背景執行</span>
+<span class="s-prompt">$</span> <span class="s-cmd">java</span> <span class="s-flag">-jar</span> <span class="s-path">app.jar</span> <span class="s-flag">&amp;</span>   <span class="s-comment"># 背景執行</span>
+<span class="s-prompt">$</span> <span class="s-cmd">nohup</span> <span class="s-cmd">java</span> <span class="s-flag">-jar</span> <span class="s-path">app.jar</span> <span class="s-flag">&gt;</span> <span class="s-path">app.log</span> <span class="s-flag">2&gt;&amp;1 &amp;</span>
+<span class="s-comment">  ↑ nohup = 關掉終端機後繼續執行</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== NETWORK ===== -->
+<div class="section" id="network">
+  <div class="section-hero" data-icon="🌐">
+    <h1>網路指令 — netstat / ss / curl</h1>
+    <div class="tags"><span class="tag tag-green">網路</span><span class="tag tag-blue">除錯</span></div>
+    <div class="desc">確認 Port 是否正常監聽、服務是否可以連通，是部署後必做的檢查。</div>
+  </div>
+  <div class="section-body">
+    <div class="card">
+      <div class="card-header"><h2>網路狀態查詢</h2><span class="header-tag tag-green">指令</span></div>
+      <div class="card-body">
+        <div class="terminal">
+          <div class="terminal-titlebar"><span class="dot dot-r"></span><span class="dot dot-y"></span><span class="dot dot-g"></span><span class="tbar-name">bash</span></div>
+          <div class="terminal-body"><span class="s-comment">## 查看哪些 Port 在監聽</span>
+<span class="s-prompt">$</span> <span class="s-cmd">netstat</span> <span class="s-flag">-tlnp</span>
+<span class="s-out">Proto  Local Address    PID/Program</span>
+<span class="s-out">tcp    0.0.0.0:8080     1234/java    ← Tomcat</span>
+<span class="s-out">tcp    0.0.0.0:80       5678/nginx   ← Nginx</span>
+<span class="s-out">tcp    0.0.0.0:443      5678/nginx</span>
+
+<span class="s-comment">  -t TCP  -l 監聽中  -n 數字IP  -p 顯示程序</span>
+
+<span class="s-comment">## ss 是更新的替代品（Ubuntu 推薦）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">ss</span> <span class="s-flag">-tlnp</span>
+
+<span class="s-comment">## 確認特定 Port</span>
+<span class="s-prompt">$</span> <span class="s-cmd">netstat</span> <span class="s-flag">-tlnp</span> | <span class="s-cmd">grep</span> <span class="s-arg">8080</span>
+
+<span class="s-comment">## 測試 HTTP 服務是否正常</span>
+<span class="s-prompt">$</span> <span class="s-cmd">curl</span> <span class="s-arg">http://localhost:8080/healthcheck</span>
+<span class="s-out">{"status":"UP"}</span>
+
+<span class="s-comment">## 測試連線（類似 ping 但測 TCP Port）</span>
+<span class="s-prompt">$</span> <span class="s-cmd">telnet</span> <span class="s-arg">192.168.1.100 3306</span>    <span class="s-comment">測試 DB 能不能連</span>
+<span class="s-prompt">$</span> <span class="s-cmd">nc</span> <span class="s-flag">-zv</span> <span class="s-arg">192.168.1.100 3306</span>  <span class="s-comment">更推薦</span>
+
+<span class="s-comment">## 查防火牆規則</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw status</span>
+<span class="s-prompt">$</span> <span class="s-cmd">sudo ufw allow</span> <span class="s-arg">8080</span>        <span class="s-comment">開放 8080 Port</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+function show(id) {
+  document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  event.currentTarget.classList.add('active');
+  window.scrollTo(0,0);
+}
+</script>
+</body>
+</html>
